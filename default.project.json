@@ -14,7 +14,7 @@
       },
       "ServerScriptService": {
         "$className": "ServerScriptService",
-        "$ignoreUnknownInstances": true,
+        "$ignoreUnknownInstances": false,
         "$path": "src/ServerScriptService"
       },
       "ServerStorage": {
@@ -26,15 +26,15 @@
         "$className": "StarterPlayer",
         "StarterPlayerScripts": {
           "$className": "StarterPlayerScripts",
-          "$ignoreUnknownInstances": true,
+          "$ignoreUnknownInstances": false,
           "$path": "src/StarterPlayer/StarterPlayerScripts"
         },
         "StarterCharacterScripts": {
             "$className": "StarterCharacterScripts",
-            "$ignoreUnknownInstances": true,
+            "$ignoreUnknownInstances": false,
             "$path": "src/StarterPlayer/StarterCharacterScripts"
         },
-        "$ignoreUnknownInstances": true
+        "$ignoreUnknownInstances": false
       }
     }
   }
