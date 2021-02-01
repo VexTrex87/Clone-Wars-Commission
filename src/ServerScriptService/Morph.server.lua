@@ -5,7 +5,7 @@ local stormTrooper = ServerStorage.Objects.Morphs.StormTrooper
 local morphPlayer = require(ServerStorage.Modules.MorphPlayer)
 
 Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
+    player.CharacterAppearanceLoaded:Connect(function(character)
         morphPlayer(character, stormTrooper)
     end)
 end)
