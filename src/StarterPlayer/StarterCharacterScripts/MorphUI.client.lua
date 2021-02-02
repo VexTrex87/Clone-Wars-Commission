@@ -4,7 +4,7 @@ local HIGHLIGHTED_COLOR = Color3.fromRGB(255, 255, 255)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local getMorphsRemote = ReplicatedStorage.Objects.Remotes.GetMorphs
+local morphStorage = ReplicatedStorage.Objects.Morphs
 local UI = Players.LocalPlayer.PlayerGui:WaitForChild("MorphUI")
 local background = UI.Background
 local topBar = background.TopBar
@@ -21,9 +21,13 @@ local function showHighlighted(element, isHighlighted)
     end
 end
 
-local function onMouseHover(button, isHovered)
-    if button:IsDescendantOf(topBar) then
-        showHighlighted(button, isHovered or background:FindFirstChild(button.Name) and background[button.Name].Visible)
+local function onMouseHover(element, isHovered)
+    if element:IsDescendantOf(topBar) then
+        showHighlighted(element, isHovered or background:FindFirstChild(element.Name) and background[element.Name].Visible)
+    elseif element.Parent == morphSelection then
+        showHighlighted(element.Title, isHovered)
+    elseif element.Parent.Name == "Morphs" then
+        showHighlighted(element, isHovered)
     end
 end
 
@@ -44,47 +48,29 @@ local function onButtonClicked(button)
                 end
             end
         end
+    elseif button:IsDescendantOf(morphSelection) then
+        if button.Parent.Name == "Title" then
+            for _, morphButton in pairs(morphSelection:GetDescendants()) do
+                if morphButton:IsA("TextButton") and morphButton.Name ~= "Title" then
+                    showHighlighted(morphButton, morphButton == button)
+                end
+            end
+        end
     end
 end
 
 local function createMorphs()
-    local morphsAndGroupsTable = getMorphsRemote:InvokeServer()
-    
-    for groupName, morphsTable in pairs(morphsAndGroupsTable) do
+    for _, group in pairs(morphStorage:GetChildren()) do
         local newGroup = morphSelection.UIListLayout.GroupTemplate:Clone()
-        newGroup.Name = groupName
-        newGroup.Title.Text = string.upper(groupName)
+        newGroup.Name = group.Name
+        newGroup.Title.Text = string.upper(group.Name)
         newGroup.Parent = morphSelection
 
-        newGroup.MouseEnter:Connect(function()
-            showHighlighted(newGroup.Title, true)
-        end)
-
-        newGroup.MouseLeave:Connect(function()
-            showHighlighted(newGroup.Title, false)
-        end)
-
-        for _, morphName in pairs(morphsTable) do
+        for _, morph in pairs(group:GetChildren()) do
             local newMorph = newGroup.Morphs.UIListLayout.MorphTemplate:Clone()
-            newMorph.Name = morphName
-            newMorph.Text = string.upper(morphName)
+            newMorph.Name = morph.Name
+            newMorph.Text = string.upper(morph.Name)
             newMorph.Parent = newGroup.Morphs
-
-            newMorph.MouseButton1Click:Connect(function()
-                for _, morphButton in pairs(morphSelection:GetDescendants()) do
-                    if morphButton:IsA("TextButton") and morphButton.Name ~= "Title" then
-                        showHighlighted(morphButton, morphButton == newMorph)
-                    end
-                end
-            end)
-
-            newMorph.MouseEnter:Connect(function()
-                showHighlighted(newMorph, true)
-            end)
-    
-            newMorph.MouseLeave:Connect(function()
-                showHighlighted(newMorph, false)
-            end)
         end
 
         newGroup.Size = UDim2.new(0, newGroup.Morphs.UIListLayout.AbsoluteContentSize.X, 1, 0)
@@ -99,18 +85,20 @@ local function __main__()
     showHighlighted(topBar.MorphSelection, true)
     createMorphs()
 
-    for _, button in pairs(UI:GetDescendants()) do
-        if button:IsA("TextButton") then
-            button.MouseButton1Click:Connect(function()
-                onButtonClicked(button)
+    for _, element in pairs(UI:GetDescendants()) do
+        if element:IsA("TextButton") then
+            element.MouseButton1Click:Connect(function()
+                onButtonClicked(element)
+            end)
+        end
+    
+        if element:IsA("TextButton") or element:IsA("Frame") and element:FindFirstChild("Title") then
+            element.MouseEnter:Connect(function()
+                onMouseHover(element, true)
             end)
 
-            button.MouseEnter:Connect(function()
-                onMouseHover(button, true)
-            end)
-
-            button.MouseLeave:Connect(function()
-                onMouseHover(button, false)
+            element.MouseLeave:Connect(function()
+                onMouseHover(element, false)
             end)
         end
     end
