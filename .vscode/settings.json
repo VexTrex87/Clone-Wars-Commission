@@ -1,5 +1,7 @@
 {
     "Lua.diagnostics.disable": [
-        "unused-local"
+        "unused-local",
+        "unknown-symbol",
+        "empty-block"
     ]
 }
