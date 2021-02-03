@@ -50,15 +50,16 @@ function RemovePlayers()
 end
 
 function AddPlayers()
-    for _,Part in pairs(partsInRegion or {}) do
-        local Char = Part.Parent
-        local p = game.Players:FindFirstChild(Char.Name)
-        if p and Char:FindFirstChild("HumanoidRootPart") and not table.find(playerInBounds, p) and Char.Humanoid.Health > 0 then
-            table.insert(playerInBounds, p)
+    for _,part in pairs(partsInRegion or {}) do
+        local Char = part.Parent
+        local player = game.Players:FindFirstChild(Char.Name)
+        if player and Char:FindFirstChild("HumanoidRootPart") and not table.find(playerInBounds, player) and Char.Humanoid.Health > 0 then
+            table.insert(playerInBounds, player)
             
         end
     end
 end
+
 function PulseRed()
     regionVisual.Transparency = 0
     regionVisual.Color = Color3.new(1,0,0)
