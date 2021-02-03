@@ -15,15 +15,15 @@ local morphSelection = background.MorphSelection
 
 local selectedMorph = nil
 
-local function showHighlighted(element, isHighlighted)
-    local chosenColor = isHighlighted and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
+local function showHighlighted(element, isHovered, outlines)
+    local chosenColor = isHovered and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
 
     if element:IsA("TextButton") then
         element.TextColor3 = chosenColor
     end
     
     for _, outline in pairs(element:GetChildren()) do
-        if table.find({"Top", "Bottom", "Left", "Right"}, outline.Name) then
+        if table.find(outlines or {"Top", "Bottom", "Left", "Right"}, outline.Name) then
             outline.BackgroundColor3 = chosenColor
         end
     end
@@ -33,16 +33,9 @@ local function onMouseHover(element, isHovered)
     if element:IsDescendantOf(topBar) then
         showHighlighted(element, isHovered or background:FindFirstChild(element.Name) and background[element.Name].Visible)
     elseif element.Parent == morphSelection then
-        showHighlighted(element.Title, isHovered)
+        showHighlighted(element.Title, isHovered or selectedMorph and element:FindFirstChild(selectedMorph, true))
     elseif element.Parent.Name == "Morphs" then
-        local chosenColor = isHovered and HIGHLIGHTED_COLOR or element.Name == selectedMorph and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
-
-        element.MorphName.TextColor3 = chosenColor
-        for _, outline in pairs(element:GetChildren()) do
-            if table.find({"Top", "Bottom", "Left", "Right"}, outline.Name) then
-                outline.BackgroundColor3 = chosenColor
-            end
-        end
+        showHighlighted(element, isHovered or element.Name == selectedMorph)
     end
 end
 
@@ -83,12 +76,18 @@ local function onButtonClicked(button)
                 end
             end
         elseif button.Parent.Name == "Morphs" then
-            showHighlighted(button, true)
             selectedMorph = button.Name
+            -- showHighlighted(button.Parent, true)
 
             for _, morphButton in pairs(morphSelection:GetDescendants()) do
                 if morphButton:IsA("ImageButton") and morphButton.Parent.Name == "Morphs" then
                     showHighlighted(morphButton, morphButton == button)
+                end
+            end
+
+            for _, morphGroupFrame in pairs(morphSelection:GetChildren()) do
+                if morphGroupFrame:IsA("Frame") then
+                    showHighlighted(morphGroupFrame.Title, selectedMorph and morphGroupFrame:FindFirstChild(selectedMorph, true))
                 end
             end
         end
@@ -110,7 +109,6 @@ local function createMorphs()
             newMorph.MorphName.Text = string.upper(morph.Name)
 
             local viewPortFrame = newMorph.ViewPortFrame
-
             local morphClone = morph:Clone()
             morphClone.Parent = viewPortFrame
 
@@ -142,11 +140,7 @@ local function __main__()
             end)
         end
     
-		if 
-            element:IsA("TextButton") or 
-            element:IsA("ImageButton") or
-			element:IsA("Frame") and element:FindFirstChild("Title")
-		then
+		if element:IsA("TextButton") or element:IsA("ImageButton") or element:IsA("Frame") and element:FindFirstChild("Title") then
             element.MouseEnter:Connect(function()
                 onMouseHover(element, true)
             end)
