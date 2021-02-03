@@ -1,19 +1,27 @@
 local UNHIGHLIGHTED_COLOR = Color3.fromRGB(150, 150, 150)
 local HIGHLIGHTED_COLOR = Color3.fromRGB(255, 255, 255)
+local FLASH_DELAY = 0.2
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local morphStorage = ReplicatedStorage.Objects.Morphs
+local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
+
 local UI = Players.LocalPlayer.PlayerGui:WaitForChild("MorphUI")
 local background = UI.Background
 local topBar = background.TopBar
 local morphSelection = background.MorphSelection
 
+local selectedMorph = nil
+
 local function showHighlighted(element, isHighlighted)
     local chosenColor = isHighlighted and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
 
-    element.TextColor3 = chosenColor
+    if element:IsA("TextButton") then
+        element.TextColor3 = chosenColor
+    end
+    
     for _, outline in pairs(element:GetChildren()) do
         if table.find({"Top", "Bottom", "Left", "Right"}, outline.Name) then
             outline.BackgroundColor3 = chosenColor
@@ -27,14 +35,33 @@ local function onMouseHover(element, isHovered)
     elseif element.Parent == morphSelection then
         showHighlighted(element.Title, isHovered)
     elseif element.Parent.Name == "Morphs" then
-        showHighlighted(element, isHovered)
+        local chosenColor = isHovered and HIGHLIGHTED_COLOR or element.Name == selectedMorph and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
+
+        element.MorphName.TextColor3 = chosenColor
+        for _, outline in pairs(element:GetChildren()) do
+            if table.find({"Top", "Bottom", "Left", "Right"}, outline.Name) then
+                outline.BackgroundColor3 = chosenColor
+            end
+        end
     end
 end
 
 local function onButtonClicked(button)
     if button:IsDescendantOf(topBar) then
         if button.Name == "Play" then
-            -- insert play logic here
+            if selectedMorph then
+                background.Visible = false
+                morphPlayerRemote:FireServer(selectedMorph)
+            else
+                for x = 1, 3 do
+                    topBar.Play.Text = "NO MORPH SELECTED"
+                    wait(FLASH_DELAY)
+                    topBar.Play.Text = ""
+                    wait(FLASH_DELAY)
+                end
+
+                topBar.Play.Text = "PLAY"
+            end
         else
             for _, frame in pairs(background:GetChildren()) do
                 if topBar:FindFirstChild(frame.Name) then -- checks if the frame has a corresponding button
@@ -55,6 +82,15 @@ local function onButtonClicked(button)
                     showHighlighted(morphButton, morphButton == button)
                 end
             end
+        elseif button.Parent.Name == "Morphs" then
+            showHighlighted(button, true)
+            selectedMorph = button.Name
+
+            for _, morphButton in pairs(morphSelection:GetDescendants()) do
+                if morphButton:IsA("ImageButton") and morphButton.Parent.Name == "Morphs" then
+                    showHighlighted(morphButton, morphButton == button)
+                end
+            end
         end
     end
 end
@@ -69,14 +105,28 @@ local function createMorphs()
         for _, morph in pairs(group:GetChildren()) do
             local newMorph = newGroup.Morphs.UIListLayout.MorphTemplate:Clone()
             newMorph.Name = morph.Name
-            newMorph.Text = string.upper(morph.Name)
             newMorph.Parent = newGroup.Morphs
+
+            newMorph.MorphName.Text = string.upper(morph.Name)
+
+            local viewPortFrame = newMorph.ViewPortFrame
+
+            local morphClone = morph:Clone()
+            morphClone.Parent = viewPortFrame
+
+            local viewportCamera = Instance.new("Camera")
+            viewportCamera.CameraType = Enum.CameraType.Attach
+            viewportCamera.CameraSubject = morphClone.UpperTorso.Middle
+            viewportCamera.Parent = viewPortFrame
+            viewportCamera.CFrame = morphClone.UpperTorso.Middle.CFrame * CFrame.new(0, 0, -10) * CFrame.Angles(0, math.rad(180), 0)
+
+            viewPortFrame.CurrentCamera = viewportCamera
         end
 
-        newGroup.Size = UDim2.new(0, newGroup.Morphs.UIListLayout.AbsoluteContentSize.X, 1, 0)
+        newGroup.Size = UDim2.new(0, newGroup.Morphs.UIListLayout.AbsoluteContentSize.X, 1, -20)
     end
 
-    morphSelection.CanvasSize = UDim2.new(0, morphSelection.UIListLayout.AbsoluteContentSize.X, 0, morphSelection.UIListLayout.AbsoluteContentSize.Y)
+    morphSelection.CanvasSize = UDim2.new(0, morphSelection.UIListLayout.AbsoluteContentSize.X, 0, 0)
 end
 
 local function __main__()
@@ -86,13 +136,17 @@ local function __main__()
     createMorphs()
 
     for _, element in pairs(UI:GetDescendants()) do
-        if element:IsA("TextButton") then
+        if element:IsA("TextButton") or element:IsA("ImageButton") then
             element.MouseButton1Click:Connect(function()
                 onButtonClicked(element)
             end)
         end
     
-        if element:IsA("TextButton") or element:IsA("Frame") and element:FindFirstChild("Title") then
+		if 
+            element:IsA("TextButton") or 
+            element:IsA("ImageButton") or
+			element:IsA("Frame") and element:FindFirstChild("Title")
+		then
             element.MouseEnter:Connect(function()
                 onMouseHover(element, true)
             end)

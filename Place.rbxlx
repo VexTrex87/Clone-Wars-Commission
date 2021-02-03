@@ -64,27 +64,27 @@
 			<Properties>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<CoordinateFrame name="CFrame">
-					<X>82.6605072</X>
-					<Y>12.7512569</Y>
-					<Z>102.076881</Z>
-					<R00>0.999559641</R00>
-					<R01>0.00163022615</R01>
-					<R02>-0.0296325572</R02>
-					<R10>-1.16415336e-10</R10>
-					<R11>0.998490214</R11>
-					<R12>0.054931622</R12>
-					<R20>0.0296773687</R20>
-					<R21>-0.0549074337</R21>
-					<R22>0.998050332</R22>
+					<X>58.1128922</X>
+					<Y>30.7367535</Y>
+					<Z>137.083374</Z>
+					<R00>0.996645212</R00>
+					<R01>0.0179608893</R01>
+					<R02>0.0798485205</R02>
+					<R10>1.86264537e-09</R10>
+					<R11>0.975622952</R11>
+					<R12>-0.219453737</R12>
+					<R20>-0.0818436369</R20>
+					<R21>0.218717515</R21>
+					<R22>0.972349882</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
 				<float name="FieldOfView">70</float>
 				<token name="FieldOfViewMode">0</token>
 				<CoordinateFrame name="Focus">
-					<X>82.7197723</X>
-					<Y>12.6413937</Y>
-					<Z>100.08078</Z>
+					<X>57.9531937</X>
+					<Y>31.1756649</Y>
+					<Z>135.138657</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -449,20 +449,28 @@ gcLgc4RKxr21zq2UlJSM]]></BinaryString>
 					<string name="ScriptGuid">{898AA9B7-C043-4531-9155-3CF916DF3448}</string>
 					<ProtectedString name="Source"><![CDATA[local UNHIGHLIGHTED_COLOR = Color3.fromRGB(150, 150, 150)
 local HIGHLIGHTED_COLOR = Color3.fromRGB(255, 255, 255)
+local FLASH_DELAY = 0.2
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local morphStorage = ReplicatedStorage.Objects.Morphs
+local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
+
 local UI = Players.LocalPlayer.PlayerGui:WaitForChild("MorphUI")
 local background = UI.Background
 local topBar = background.TopBar
 local morphSelection = background.MorphSelection
 
+local selectedMorph = nil
+
 local function showHighlighted(element, isHighlighted)
     local chosenColor = isHighlighted and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
 
-    element.TextColor3 = chosenColor
+    if element:IsA("TextButton") then
+        element.TextColor3 = chosenColor
+    end
+    
     for _, outline in pairs(element:GetChildren()) do
         if table.find({"Top", "Bottom", "Left", "Right"}, outline.Name) then
             outline.BackgroundColor3 = chosenColor
@@ -476,14 +484,33 @@ local function onMouseHover(element, isHovered)
     elseif element.Parent == morphSelection then
         showHighlighted(element.Title, isHovered)
     elseif element.Parent.Name == "Morphs" then
-        showHighlighted(element, isHovered)
+        local chosenColor = isHovered and HIGHLIGHTED_COLOR or element.Name == selectedMorph and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
+
+        element.MorphName.TextColor3 = chosenColor
+        for _, outline in pairs(element:GetChildren()) do
+            if table.find({"Top", "Bottom", "Left", "Right"}, outline.Name) then
+                outline.BackgroundColor3 = chosenColor
+            end
+        end
     end
 end
 
 local function onButtonClicked(button)
     if button:IsDescendantOf(topBar) then
         if button.Name == "Play" then
-            -- insert play logic here
+            if selectedMorph then
+                background.Visible = false
+                morphPlayerRemote:FireServer(selectedMorph)
+            else
+                for x = 1, 3 do
+                    topBar.Play.Text = "NO MORPH SELECTED"
+                    wait(FLASH_DELAY)
+                    topBar.Play.Text = ""
+                    wait(FLASH_DELAY)
+                end
+
+                topBar.Play.Text = "PLAY"
+            end
         else
             for _, frame in pairs(background:GetChildren()) do
                 if topBar:FindFirstChild(frame.Name) then -- checks if the frame has a corresponding button
@@ -504,6 +531,15 @@ local function onButtonClicked(button)
                     showHighlighted(morphButton, morphButton == button)
                 end
             end
+        elseif button.Parent.Name == "Morphs" then
+            showHighlighted(button, true)
+            selectedMorph = button.Name
+
+            for _, morphButton in pairs(morphSelection:GetDescendants()) do
+                if morphButton:IsA("ImageButton") and morphButton.Parent.Name == "Morphs" then
+                    showHighlighted(morphButton, morphButton == button)
+                end
+            end
         end
     end
 end
@@ -518,14 +554,28 @@ local function createMorphs()
         for _, morph in pairs(group:GetChildren()) do
             local newMorph = newGroup.Morphs.UIListLayout.MorphTemplate:Clone()
             newMorph.Name = morph.Name
-            newMorph.Text = string.upper(morph.Name)
             newMorph.Parent = newGroup.Morphs
+
+            newMorph.MorphName.Text = string.upper(morph.Name)
+
+            local viewPortFrame = newMorph.ViewPortFrame
+
+            local morphClone = morph:Clone()
+            morphClone.Parent = viewPortFrame
+
+            local viewportCamera = Instance.new("Camera")
+            viewportCamera.CameraType = Enum.CameraType.Attach
+            viewportCamera.CameraSubject = morphClone.UpperTorso.Middle
+            viewportCamera.Parent = viewPortFrame
+            viewportCamera.CFrame = morphClone.UpperTorso.Middle.CFrame * CFrame.new(0, 0, -10) * CFrame.Angles(0, math.rad(180), 0)
+
+            viewPortFrame.CurrentCamera = viewportCamera
         end
 
-        newGroup.Size = UDim2.new(0, newGroup.Morphs.UIListLayout.AbsoluteContentSize.X, 1, 0)
+        newGroup.Size = UDim2.new(0, newGroup.Morphs.UIListLayout.AbsoluteContentSize.X, 1, -20)
     end
 
-    morphSelection.CanvasSize = UDim2.new(0, morphSelection.UIListLayout.AbsoluteContentSize.X, 0, morphSelection.UIListLayout.AbsoluteContentSize.Y)
+    morphSelection.CanvasSize = UDim2.new(0, morphSelection.UIListLayout.AbsoluteContentSize.X, 0, 0)
 end
 
 local function __main__()
@@ -535,13 +585,17 @@ local function __main__()
     createMorphs()
 
     for _, element in pairs(UI:GetDescendants()) do
-        if element:IsA("TextButton") then
+        if element:IsA("TextButton") or element:IsA("ImageButton") then
             element.MouseButton1Click:Connect(function()
                 onButtonClicked(element)
             end)
         end
     
-        if element:IsA("TextButton") or element:IsA("Frame") and element:FindFirstChild("Title") then
+		if 
+            element:IsA("TextButton") or 
+            element:IsA("ImageButton") or
+			element:IsA("Frame") and element:FindFirstChild("Title")
+		then
             element.MouseEnter:Connect(function()
                 onMouseHover(element, true)
             end)
@@ -574,7 +628,7 @@ __main__()]]></ProtectedString>
 			<string name="Name">StarterGui</string>
 			<bool name="ResetPlayerGuiOnSpawn">true</bool>
 			<token name="ScreenOrientation">2</token>
-			<bool name="ShowDevelopmentGui">true</bool>
+			<bool name="ShowDevelopmentGui">false</bool>
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
@@ -697,7 +751,7 @@ __main__()]]></ProtectedString>
 							<XS>0</XS>
 							<XO>50</XO>
 							<YS>0</YS>
-							<YO>50</YO>
+							<YO>80</YO>
 						</UDim2>
 						<Ref name="RootLocalizationTable">null</Ref>
 						<float name="Rotation">0</float>
@@ -2283,7 +2337,7 @@ __main__()]]></ProtectedString>
 							<XS>0</XS>
 							<XO>400</XO>
 							<YS>0</YS>
-							<YO>50</YO>
+							<YO>80</YO>
 						</UDim2>
 						<Ref name="RootLocalizationTable">null</Ref>
 						<float name="Rotation">0</float>
@@ -2302,7 +2356,7 @@ __main__()]]></ProtectedString>
 							<XS>1</XS>
 							<XO>-450</XO>
 							<YS>1</YS>
-							<YO>-100</YO>
+							<YO>-160</YO>
 						</UDim2>
 						<token name="SizeConstraint">0</token>
 						<int64 name="SourceAssetId">-1</int64>
@@ -2451,7 +2505,7 @@ __main__()]]></ProtectedString>
 										<BinaryString name="Tags"></BinaryString>
 										<token name="VerticalAlignment">2</token>
 									</Properties>
-									<Item class="TextButton" referent="RBX9EA97BCAD97A4BC9B71E7319E1D75DAF">
+									<Item class="ImageButton" referent="RBX1BF44995A8204FEFA1D7B8972CE97B4A">
 										<Properties>
 											<bool name="Active">false</bool>
 											<Vector2 name="AnchorPoint">
@@ -2477,9 +2531,23 @@ __main__()]]></ProtectedString>
 											<int name="BorderSizePixel">1</int>
 											<bool name="ClipsDescendants">false</bool>
 											<bool name="Draggable">false</bool>
-											<token name="Font">12</token>
+											<Content name="HoverImage"><null></null></Content>
+											<Content name="Image"><null></null></Content>
+											<Color3 name="ImageColor3">
+												<R>1</R>
+												<G>1</G>
+												<B>1</B>
+											</Color3>
+											<Vector2 name="ImageRectOffset">
+												<X>0</X>
+												<Y>0</Y>
+											</Vector2>
+											<Vector2 name="ImageRectSize">
+												<X>0</X>
+												<Y>0</Y>
+											</Vector2>
+											<float name="ImageTransparency">0</float>
 											<int name="LayoutOrder">0</int>
-											<float name="LineHeight">1</float>
 											<bool name="Modal">false</bool>
 											<string name="Name">MorphTemplate</string>
 											<Ref name="NextSelectionDown">null</Ref>
@@ -2492,9 +2560,10 @@ __main__()]]></ProtectedString>
 												<YS>0</YS>
 												<YO>0</YO>
 											</UDim2>
-											<bool name="RichText">false</bool>
+											<Content name="PressedImage"><null></null></Content>
 											<Ref name="RootLocalizationTable">null</Ref>
 											<float name="Rotation">0</float>
+											<token name="ScaleType">0</token>
 											<bool name="Selectable">false</bool>
 											<bool name="Selected">false</bool>
 											<Ref name="SelectionImageObject">null</Ref>
@@ -2505,28 +2574,26 @@ __main__()]]></ProtectedString>
 												<YO>0</YO>
 											</UDim2>
 											<token name="SizeConstraint">0</token>
+											<Rect2D name="SliceCenter">
+												<min>
+													<X>0</X>
+													<Y>0</Y>
+												</min>
+												<max>
+													<X>0</X>
+													<Y>0</Y>
+												</max>
+											</Rect2D>
+											<float name="SliceScale">1</float>
 											<int64 name="SourceAssetId">-1</int64>
 											<token name="Style">0</token>
 											<BinaryString name="Tags"></BinaryString>
-											<string name="Text">TEMPLATE</string>
-											<Color3 name="TextColor3">
-												<R>0.588235319</R>
-												<G>0.588235319</G>
-												<B>0.588235319</B>
-											</Color3>
-											<bool name="TextScaled">false</bool>
-											<float name="TextSize">30</float>
-											<Color3 name="TextStrokeColor3">
-												<R>0</R>
-												<G>0</G>
-												<B>0</B>
-											</Color3>
-											<float name="TextStrokeTransparency">1</float>
-											<float name="TextTransparency">0</float>
-											<token name="TextTruncate">0</token>
-											<bool name="TextWrapped">true</bool>
-											<token name="TextXAlignment">2</token>
-											<token name="TextYAlignment">1</token>
+											<UDim2 name="TileSize">
+												<XS>1</XS>
+												<XO>0</XO>
+												<YS>1</YS>
+												<YO>0</YO>
+											</UDim2>
 											<bool name="Visible">true</bool>
 											<int name="ZIndex">1</int>
 										</Properties>
@@ -2745,6 +2812,172 @@ __main__()]]></ProtectedString>
 												<token name="SizeConstraint">0</token>
 												<int64 name="SourceAssetId">-1</int64>
 												<token name="Style">0</token>
+												<BinaryString name="Tags"></BinaryString>
+												<bool name="Visible">true</bool>
+												<int name="ZIndex">1</int>
+											</Properties>
+										</Item>
+										<Item class="TextLabel" referent="RBXD1D64AAD5C7943A193D3410FC7AB59F2">
+											<Properties>
+												<bool name="Active">false</bool>
+												<Vector2 name="AnchorPoint">
+													<X>0</X>
+													<Y>1</Y>
+												</Vector2>
+												<BinaryString name="AttributesSerialize"></BinaryString>
+												<bool name="AutoLocalize">true</bool>
+												<token name="AutomaticSize">0</token>
+												<Color3 name="BackgroundColor3">
+													<R>1</R>
+													<G>1</G>
+													<B>1</B>
+												</Color3>
+												<float name="BackgroundTransparency">1</float>
+												<Color3 name="BorderColor3">
+													<R>0.105882362</R>
+													<G>0.164705887</G>
+													<B>0.207843155</B>
+												</Color3>
+												<token name="BorderMode">0</token>
+												<int name="BorderSizePixel">1</int>
+												<bool name="ClipsDescendants">false</bool>
+												<bool name="Draggable">false</bool>
+												<token name="Font">12</token>
+												<int name="LayoutOrder">0</int>
+												<float name="LineHeight">1</float>
+												<string name="Name">MorphName</string>
+												<Ref name="NextSelectionDown">null</Ref>
+												<Ref name="NextSelectionLeft">null</Ref>
+												<Ref name="NextSelectionRight">null</Ref>
+												<Ref name="NextSelectionUp">null</Ref>
+												<UDim2 name="Position">
+													<XS>0</XS>
+													<XO>10</XO>
+													<YS>1</YS>
+													<YO>-10</YO>
+												</UDim2>
+												<bool name="RichText">false</bool>
+												<Ref name="RootLocalizationTable">null</Ref>
+												<float name="Rotation">0</float>
+												<bool name="Selectable">false</bool>
+												<Ref name="SelectionImageObject">null</Ref>
+												<UDim2 name="Size">
+													<XS>1</XS>
+													<XO>-20</XO>
+													<YS>0</YS>
+													<YO>60</YO>
+												</UDim2>
+												<token name="SizeConstraint">0</token>
+												<int64 name="SourceAssetId">-1</int64>
+												<BinaryString name="Tags"></BinaryString>
+												<string name="Text">Group</string>
+												<Color3 name="TextColor3">
+													<R>0.588235319</R>
+													<G>0.588235319</G>
+													<B>0.588235319</B>
+												</Color3>
+												<bool name="TextScaled">false</bool>
+												<float name="TextSize">30</float>
+												<Color3 name="TextStrokeColor3">
+													<R>0</R>
+													<G>0</G>
+													<B>0</B>
+												</Color3>
+												<float name="TextStrokeTransparency">1</float>
+												<float name="TextTransparency">0</float>
+												<token name="TextTruncate">0</token>
+												<bool name="TextWrapped">true</bool>
+												<token name="TextXAlignment">2</token>
+												<token name="TextYAlignment">2</token>
+												<bool name="Visible">true</bool>
+												<int name="ZIndex">1</int>
+											</Properties>
+										</Item>
+										<Item class="ViewportFrame" referent="RBXFE65FA9961A6446F8B75F8C11167E1C9">
+											<Properties>
+												<bool name="Active">true</bool>
+												<Color3 name="Ambient">
+													<R>0.784313738</R>
+													<G>0.784313738</G>
+													<B>0.784313738</B>
+												</Color3>
+												<Vector2 name="AnchorPoint">
+													<X>0</X>
+													<Y>0</Y>
+												</Vector2>
+												<BinaryString name="AttributesSerialize"></BinaryString>
+												<bool name="AutoLocalize">true</bool>
+												<token name="AutomaticSize">0</token>
+												<Color3 name="BackgroundColor3">
+													<R>1</R>
+													<G>1</G>
+													<B>1</B>
+												</Color3>
+												<float name="BackgroundTransparency">1</float>
+												<Color3 name="BorderColor3">
+													<R>0.105882362</R>
+													<G>0.164705887</G>
+													<B>0.207843155</B>
+												</Color3>
+												<token name="BorderMode">0</token>
+												<int name="BorderSizePixel">1</int>
+												<CoordinateFrame name="CameraCFrame">
+													<X>0</X>
+													<Y>0</Y>
+													<Z>0</Z>
+													<R00>1</R00>
+													<R01>0</R01>
+													<R02>0</R02>
+													<R10>0</R10>
+													<R11>1</R11>
+													<R12>0</R12>
+													<R20>0</R20>
+													<R21>0</R21>
+													<R22>1</R22>
+												</CoordinateFrame>
+												<float name="CameraFieldOfView">1.22173059</float>
+												<bool name="ClipsDescendants">false</bool>
+												<bool name="Draggable">false</bool>
+												<Color3 name="ImageColor3">
+													<R>1</R>
+													<G>1</G>
+													<B>1</B>
+												</Color3>
+												<float name="ImageTransparency">0</float>
+												<int name="LayoutOrder">0</int>
+												<Color3 name="LightColor">
+													<R>0.549019635</R>
+													<G>0.549019635</G>
+													<B>0.549019635</B>
+												</Color3>
+												<Vector3 name="LightDirection">
+													<X>-1</X>
+													<Y>-1</Y>
+													<Z>-1</Z>
+												</Vector3>
+												<string name="Name">ViewPortFrame</string>
+												<Ref name="NextSelectionDown">null</Ref>
+												<Ref name="NextSelectionLeft">null</Ref>
+												<Ref name="NextSelectionRight">null</Ref>
+												<Ref name="NextSelectionUp">null</Ref>
+												<UDim2 name="Position">
+													<XS>0</XS>
+													<XO>0</XO>
+													<YS>0</YS>
+													<YO>0</YO>
+												</UDim2>
+												<Ref name="RootLocalizationTable">null</Ref>
+												<float name="Rotation">0</float>
+												<bool name="Selectable">true</bool>
+												<Ref name="SelectionImageObject">null</Ref>
+												<UDim2 name="Size">
+													<XS>1</XS>
+													<XO>0</XO>
+													<YS>1</YS>
+													<YO>0</YO>
+												</UDim2>
+												<token name="SizeConstraint">0</token>
+												<int64 name="SourceAssetId">-1</int64>
 												<BinaryString name="Tags"></BinaryString>
 												<bool name="Visible">true</bool>
 												<int name="ZIndex">1</int>
