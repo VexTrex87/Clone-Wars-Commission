@@ -104,6 +104,7 @@ local function onButtonClicked(button)
                 loading.TextLabel.Text = "Loading character..."
                 loading.Visible = true
                 background.Visible = false
+                morphPlayerRemote:InvokeServer(selectedMorph)
                 wait(3)
                 loading.Visible = false
             else
