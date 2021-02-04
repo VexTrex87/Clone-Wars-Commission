@@ -4,7 +4,7 @@ return function(callback, attempts)
     local didError = false
     local status = {}
     
-    for x = 1, attempts or DEFAULT_ATTEMPTS do
+    for _ = 1, attempts or DEFAULT_ATTEMPTS do
         local success, errorMessage = pcall(callback)
 
         table.insert(status, {

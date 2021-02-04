@@ -123,7 +123,7 @@ local function onButtonClicked(button)
                 wait(3)
                 loading.Visible = false
             else
-                for x = 1, 3 do
+                for _ = 1, 3 do
                     topBar.Play.Text = "NO MORPH SELECTED"
                     wait(FLASH_DELAY)
                     topBar.Play.Text = ""

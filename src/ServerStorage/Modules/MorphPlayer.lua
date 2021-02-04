@@ -1,4 +1,4 @@
-local function replaceBodyPart(character, morph, bodyPart)
+local function replaceBodyPart(character, bodyPart)
 	bodyPart = bodyPart:Clone()
 	bodyPart.Parent = character.Morph
 
@@ -40,7 +40,7 @@ local function morphCharacter(character, morph)
 	morphFolder.Parent = character
 
 	for _, bodyPart in pairs(morph:GetChildren()) do
-		replaceBodyPart(character, morph, bodyPart)
+		replaceBodyPart(character, bodyPart)
 	end
 
 	morph:Destroy()

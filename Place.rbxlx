@@ -65,27 +65,27 @@
 			<Properties>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<CoordinateFrame name="CFrame">
-					<X>131.598434</X>
-					<Y>39.1748352</Y>
-					<Z>188.300674</Z>
-					<R00>0.996645212</R00>
-					<R01>0.0179608893</R01>
-					<R02>0.0798485205</R02>
-					<R10>1.86264537e-09</R10>
-					<R11>0.975622952</R11>
-					<R12>-0.219453737</R12>
-					<R20>-0.0818436369</R20>
-					<R21>0.218717515</R21>
-					<R22>0.972349882</R22>
+					<X>110.9133</X>
+					<Y>21.704546</Y>
+					<Z>126.723618</Z>
+					<R00>0.945556641</R00>
+					<R01>-0.00339681399</R01>
+					<R02>0.325440079</R02>
+					<R10>2.32830671e-10</R10>
+					<R11>0.999945581</R11>
+					<R12>0.0104370313</R12>
+					<R20>-0.325457841</R20>
+					<R21>-0.00986880437</R21>
+					<R22>0.945505023</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
 				<float name="FieldOfView">70</float>
 				<token name="FieldOfViewMode">0</token>
 				<CoordinateFrame name="Focus">
-					<X>131.438736</X>
-					<Y>39.6137466</Y>
-					<Z>186.355957</Z>
+					<X>110.262421</X>
+					<Y>21.683672</Y>
+					<Z>124.832611</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -377,8 +377,8 @@ gcLgc4RKxr21zq2UlJSM]]></BinaryString>
 			<bool name="EnableScriptCollabOnLoad">false</bool>
 			<string name="Name">StudioData</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<int64 name="SrcPlaceId">0</int64>
-			<int64 name="SrcUniverseId">0</int64>
+			<int64 name="SrcPlaceId">6343325734</int64>
+			<int64 name="SrcUniverseId">2347667867</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
 	</Item>
@@ -573,7 +573,7 @@ local function onButtonClicked(button)
                 wait(3)
                 loading.Visible = false
             else
-                for x = 1, 3 do
+                for _ = 1, 3 do
                     topBar.Play.Text = "NO MORPH SELECTED"
                     wait(FLASH_DELAY)
                     topBar.Play.Text = ""
@@ -5463,8 +5463,7 @@ __main__()]]></ProtectedString>
 				<Content name="LinkedSource"><null></null></Content>
 				<string name="Name">Morph</string>
 				<string name="ScriptGuid">{A3958AE1-0FDB-41C0-A1DD-7BD897AC33CC}</string>
-				<ProtectedString name="Source"><![CDATA[local Players = game:GetService("Players")
-local ServerStorage = game:GetService("ServerStorage")
+				<ProtectedString name="Source"><![CDATA[local ServerStorage = game:GetService("ServerStorage")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local morphPlayer = require(ServerStorage.Modules.MorphPlayer)
@@ -5504,7 +5503,7 @@ end]]></ProtectedString>
 					<Content name="LinkedSource"><null></null></Content>
 					<string name="Name">MorphPlayer</string>
 					<string name="ScriptGuid">{84B115AB-9426-4A14-BE5A-262ADBCA973B}</string>
-					<ProtectedString name="Source"><![CDATA[local function replaceBodyPart(character, morph, bodyPart)
+					<ProtectedString name="Source"><![CDATA[local function replaceBodyPart(character, bodyPart)
 	bodyPart = bodyPart:Clone()
 	bodyPart.Parent = character.Morph
 
@@ -5546,7 +5545,7 @@ local function morphCharacter(character, morph)
 	morphFolder.Parent = character
 
 	for _, bodyPart in pairs(morph:GetChildren()) do
-		replaceBodyPart(character, morph, bodyPart)
+		replaceBodyPart(character, bodyPart)
 	end
 
 	morph:Destroy()
@@ -89090,7 +89089,7 @@ return function(callback, attempts)
     local didError = false
     local status = {}
     
-    for x = 1, attempts or DEFAULT_ATTEMPTS do
+    for _ = 1, attempts or DEFAULT_ATTEMPTS do
         local success, errorMessage = pcall(callback)
 
         table.insert(status, {
