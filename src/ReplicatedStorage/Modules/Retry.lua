@@ -1,7 +1,6 @@
 local DEFAULT_ATTEMPTS = 3
 
 return function(callback, attempts)
-    local didError = false
     local status = {}
     
     for _ = 1, attempts or DEFAULT_ATTEMPTS do
@@ -13,11 +12,9 @@ return function(callback, attempts)
         })
 
         if success then
-            break
-        else
-            didError = true
+            return nil
         end
     end
 
-    return didError and status or nil
+    return status
 end

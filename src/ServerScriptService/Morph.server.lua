@@ -7,9 +7,9 @@ local morphStorage = ReplicatedStorage.Objects.Morphs
 local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
 
 morphPlayerRemote.OnServerInvoke = function(player, morphName)
-    local morph = morphStorage:FindFirstChild(morphName, true)
     local character = player.Character
-    if morph and character then
+    local morph = morphStorage:FindFirstChild(morphName, true)
+    if character and morph then
         morphPlayer(character, morph)
     end
 end

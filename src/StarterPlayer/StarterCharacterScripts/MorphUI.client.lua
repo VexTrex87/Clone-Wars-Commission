@@ -5,13 +5,12 @@ local DEACTIVATED_COLOR = Color3.fromRGB(230, 57, 70)
 local DEACTIVATED_POSITION = UDim2.new(0, 2, 0.5, 0)
 local ACTIVATED_COLOR = Color3.fromRGB(57, 230, 80)
 local ACTIVATED_POSITION = UDim2.new(0, 28, 0.5, 0)
-
 local SWITCH_TWEEN_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut)
-local FLASH_DELAY = 0.2
 local SETTINGS = {
     ["Music"] = true
 }
 
+local FLASH_DELAY = 0.2
 local MIN_MUSIC_DELAY, MAX_MUSIC_DELAY = 5, 20
 local CREDITS = {
     {
@@ -62,7 +61,7 @@ local function showHighlighted(element, isHovered)
         element.TextColor3 = chosenColor
     end
 
-    for _, child in pairs(element:GetChildren()) do
+    for _, child in ipairs(element:GetChildren()) do
         if child.Name == "Outline" then
             child.BackgroundColor3 = chosenColor
         elseif child:IsA("TextLabel") or child:IsA("TextButton") then
@@ -83,7 +82,7 @@ end
 
 local function playMusic()
     while true do
-        for _,sound in pairs(musicStorage:GetChildren()) do
+        for _,sound in ipairs(musicStorage:GetChildren()) do
             sound:Play()
             sound.Stopped:Wait()
             wait(math.random(MIN_MUSIC_DELAY, MAX_MUSIC_DELAY))
@@ -134,14 +133,14 @@ local function onButtonClicked(button)
             end
         else
             -- opens corresponding frame & closes others
-            for _, frame in pairs(background:GetChildren()) do
+            for _, frame in ipairs(background:GetChildren()) do
                 if topBar:FindFirstChild(frame.Name) then
                     frame.Visible = frame.Name == button.Name
                 end
             end
 
             -- highlight corresponding button & unhighlight other buttons
-            for _, topBarButton in pairs(topBar:GetChildren()) do
+            for _, topBarButton in ipairs(topBar:GetChildren()) do
                 if topBarButton:IsA("TextButton") then
                     showHighlighted(topBarButton, topBarButton == button)
                 end
@@ -152,14 +151,14 @@ local function onButtonClicked(button)
             selectedMorph = button.Name
 
             -- highlight pressed morph & highlight others
-            for _, morphButton in pairs(morphSelection:GetDescendants()) do
+            for _, morphButton in ipairs(morphSelection:GetDescendants()) do
                 if morphButton:IsA("ImageButton") and morphButton.Parent.Name == "Morphs" then
                     showHighlighted(morphButton, morphButton == button)
                 end
             end
 
             -- highlight group of pressed morph, unhighlight others
-            for _, morphGroupFrame in pairs(morphSelection:GetChildren()) do
+            for _, morphGroupFrame in ipairs(morphSelection:GetChildren()) do
                 if morphGroupFrame:IsA("Frame") then
                     showHighlighted(morphGroupFrame.Title, selectedMorph and morphGroupFrame:FindFirstChild(selectedMorph, true))
                 end
@@ -192,7 +191,7 @@ local function createSettings()
 end
 
 local function createCredits()
-    for _, info in pairs(CREDITS) do
+    for _, info in ipairs(CREDITS) do
         local newSlot = credits.UIListLayout.Template:Clone()
         newSlot.Name = info.Username
         newSlot.Username.Text = info.Username
@@ -219,13 +218,13 @@ local function createCredits()
 end
 
 local function createMorphs()
-    for _, group in pairs(morphStorage:GetChildren()) do
+    for _, group in ipairs(morphStorage:GetChildren()) do
         local newGroup = morphSelection.UIListLayout.GroupTemplate:Clone()
         newGroup.Name = group.Name
         newGroup.Title.Text = string.upper(group.Name)
         newGroup.Parent = morphSelection
 
-        for _, morph in pairs(group:GetChildren()) do
+        for _, morph in ipairs(group:GetChildren()) do
             local newMorph = newGroup.Morphs.UIListLayout.MorphTemplate:Clone()
             newMorph.Name = morph.Name
             newMorph.Parent = newGroup.Morphs
@@ -252,9 +251,9 @@ local function createMorphs()
 end
 
 local function __main__()
+    UI.Enabled = true
     loading.Visible = true
     loading.TextLabel.Text = "Loading..."
-
     background.Visible = false
     topBar.Visible = true
     morphSelection.Visible = true
@@ -267,7 +266,7 @@ local function __main__()
     createCredits()
     createSettings()
 
-    for _, element in pairs(UI:GetDescendants()) do
+    for _, element in ipairs(UI:GetDescendants()) do
         if element:IsA("TextButton") or element:IsA("ImageButton") then
             element.MouseButton1Click:Connect(function()
                 onButtonClicked(element)
