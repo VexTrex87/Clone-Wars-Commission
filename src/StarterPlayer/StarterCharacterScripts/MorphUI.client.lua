@@ -9,9 +9,10 @@ local ACTIVATED_POSITION = UDim2.new(0, 28, 0.5, 0)
 local SWITCH_TWEEN_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut)
 local FLASH_DELAY = 0.2
 local SETTINGS = {
-    ["Light Mode"] = false
+    ["Music"] = true
 }
 
+local MIN_MUSIC_DELAY, MAX_MUSIC_DELAY = 5, 20
 local CREDITS = {
     {
         Username = "ROBLOX",
@@ -39,6 +40,8 @@ local retry = require(modules.Retry)
 
 local morphStorage = ReplicatedStorage.Objects.Morphs
 local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
+local musicStorage = ReplicatedStorage.Objects.Music
+local clickSound = ReplicatedStorage.Objects.Sounds.Click
 
 local UI = Players.LocalPlayer.PlayerGui:WaitForChild("MorphUI")
 local background = UI.Background
@@ -78,6 +81,16 @@ local function showHighlighted(element, isHovered)
     end
 end
 
+local function playMusic()
+    while true do
+        for _,sound in pairs(musicStorage:GetChildren()) do
+            sound:Play()
+            sound.Stopped:Wait()
+            wait(math.random(MIN_MUSIC_DELAY, MAX_MUSIC_DELAY))
+        end
+    end
+end
+
 local function onMouseHover(element, isHovered)
     if element:IsA("TextButton") and element.Parent == topBar then
         -- highlight if hovered or if corresponding frame is visible
@@ -98,6 +111,8 @@ local function onMouseHover(element, isHovered)
 end
 
 local function onButtonClicked(button)
+    clickSound:Play()
+
     if button:IsDescendantOf(topBar) then
         if button.Name == "Play" then
             if selectedMorph then
@@ -154,9 +169,9 @@ local function onButtonClicked(button)
         settingsData[button.Name] = not settingsData[button.Name]
         newTween(button.BubbleFrame.Bubble, SWITCH_TWEEN_INFO, {Position = settingsData[button.Name] and ACTIVATED_POSITION or DEACTIVATED_POSITION})
         newTween(button.BubbleFrame.Bubble, SWITCH_TWEEN_INFO, {BackgroundColor3 = settingsData[button.Name] and ACTIVATED_COLOR or DEACTIVATED_COLOR})
-        
-        if button.Name == "LightMode" then
-            -- do logic here
+
+        for _,sound in pairs(musicStorage:GetChildren()) do
+            sound.Volume = settingsData[button.Name] and 0.3 or 0
         end
     end
 end
@@ -281,6 +296,8 @@ local function __main__()
     wait(1)
     background.Visible = true
     loading.Visible = false
+
+    playMusic()
 end
 
 __main__()

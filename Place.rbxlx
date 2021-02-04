@@ -459,9 +459,10 @@ local ACTIVATED_POSITION = UDim2.new(0, 28, 0.5, 0)
 local SWITCH_TWEEN_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut)
 local FLASH_DELAY = 0.2
 local SETTINGS = {
-    ["Light Mode"] = false
+    ["Music"] = true
 }
 
+local MIN_MUSIC_DELAY, MAX_MUSIC_DELAY = 5, 20
 local CREDITS = {
     {
         Username = "ROBLOX",
@@ -489,6 +490,8 @@ local retry = require(modules.Retry)
 
 local morphStorage = ReplicatedStorage.Objects.Morphs
 local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
+local musicStorage = ReplicatedStorage.Objects.Music
+local clickSound = ReplicatedStorage.Objects.Sounds.Click
 
 local UI = Players.LocalPlayer.PlayerGui:WaitForChild("MorphUI")
 local background = UI.Background
@@ -528,6 +531,16 @@ local function showHighlighted(element, isHovered)
     end
 end
 
+local function playMusic()
+    while true do
+        for _,sound in pairs(musicStorage:GetChildren()) do
+            sound:Play()
+            sound.Stopped:Wait()
+            wait(math.random(MIN_MUSIC_DELAY, MAX_MUSIC_DELAY))
+        end
+    end
+end
+
 local function onMouseHover(element, isHovered)
     if element:IsA("TextButton") and element.Parent == topBar then
         -- highlight if hovered or if corresponding frame is visible
@@ -548,12 +561,15 @@ local function onMouseHover(element, isHovered)
 end
 
 local function onButtonClicked(button)
+    clickSound:Play()
+
     if button:IsDescendantOf(topBar) then
         if button.Name == "Play" then
             if selectedMorph then
                 loading.TextLabel.Text = "Loading character..."
                 loading.Visible = true
                 background.Visible = false
+                morphPlayerRemote:InvokeServer(selectedMorph)
                 wait(3)
                 loading.Visible = false
             else
@@ -603,9 +619,9 @@ local function onButtonClicked(button)
         settingsData[button.Name] = not settingsData[button.Name]
         newTween(button.BubbleFrame.Bubble, SWITCH_TWEEN_INFO, {Position = settingsData[button.Name] and ACTIVATED_POSITION or DEACTIVATED_POSITION})
         newTween(button.BubbleFrame.Bubble, SWITCH_TWEEN_INFO, {BackgroundColor3 = settingsData[button.Name] and ACTIVATED_COLOR or DEACTIVATED_COLOR})
-        
-        if button.Name == "LightMode" then
-            -- do logic here
+
+        for _,sound in pairs(musicStorage:GetChildren()) do
+            sound.Volume = settingsData[button.Name] and 0.3 or 0
         end
     end
 end
@@ -730,6 +746,8 @@ local function __main__()
     wait(1)
     background.Visible = true
     loading.Visible = false
+
+    playMusic()
 end
 
 __main__()]]></ProtectedString>
@@ -3095,7 +3113,7 @@ __main__()]]></ProtectedString>
 									</Item>
 								</Item>
 							</Item>
-							<Item class="TextButton" referent="RBX9BFF23DCAE254B90B6CBA529797FAEEF">
+							<Item class="TextLabel" referent="RBX5B57628CDC614E24BE10F90F9365FB41">
 								<Properties>
 									<bool name="Active">false</bool>
 									<Vector2 name="AnchorPoint">
@@ -3103,7 +3121,6 @@ __main__()]]></ProtectedString>
 										<Y>0</Y>
 									</Vector2>
 									<BinaryString name="AttributesSerialize"></BinaryString>
-									<bool name="AutoButtonColor">true</bool>
 									<bool name="AutoLocalize">true</bool>
 									<token name="AutomaticSize">0</token>
 									<Color3 name="BackgroundColor3">
@@ -3124,7 +3141,6 @@ __main__()]]></ProtectedString>
 									<token name="Font">12</token>
 									<int name="LayoutOrder">0</int>
 									<float name="LineHeight">1</float>
-									<bool name="Modal">false</bool>
 									<string name="Name">Title</string>
 									<Ref name="NextSelectionDown">null</Ref>
 									<Ref name="NextSelectionLeft">null</Ref>
@@ -3140,7 +3156,6 @@ __main__()]]></ProtectedString>
 									<Ref name="RootLocalizationTable">null</Ref>
 									<float name="Rotation">0</float>
 									<bool name="Selectable">false</bool>
-									<bool name="Selected">false</bool>
 									<Ref name="SelectionImageObject">null</Ref>
 									<UDim2 name="Size">
 										<XS>1</XS>
@@ -3150,7 +3165,6 @@ __main__()]]></ProtectedString>
 									</UDim2>
 									<token name="SizeConstraint">0</token>
 									<int64 name="SourceAssetId">-1</int64>
-									<token name="Style">0</token>
 									<BinaryString name="Tags"></BinaryString>
 									<string name="Text">Group</string>
 									<Color3 name="TextColor3">
@@ -5458,13 +5472,13 @@ local morphPlayer = require(ServerStorage.Modules.MorphPlayer)
 local morphStorage = ReplicatedStorage.Objects.Morphs
 local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
 
-morphPlayerRemote.OnServerEvent:Connect(function(player, morphName)
+morphPlayerRemote.OnServerInvoke = function(player, morphName)
     local morph = morphStorage:FindFirstChild(morphName, true)
     local character = player.Character
     if morph and character then
         morphPlayer(character, morph)
     end
-end)]]></ProtectedString>
+end]]></ProtectedString>
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
@@ -5604,7 +5618,7 @@ end]]></ProtectedString>
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
-				<Item class="RemoteEvent" referent="RBXD125DE6A6B5D4A5A9D6FE60FC7ED0380">
+				<Item class="RemoteFunction" referent="RBXA22AF699E1404E8DB1ECABC1C8ABFC8A">
 					<Properties>
 						<BinaryString name="AttributesSerialize"></BinaryString>
 						<string name="Name">MorphPlayer</string>
@@ -5623,7 +5637,7 @@ end]]></ProtectedString>
 				<Item class="Folder" referent="RBX6A56331EBDC9425B82B207A24545B589">
 					<Properties>
 						<BinaryString name="AttributesSerialize"></BinaryString>
-						<string name="Name">Galactic Empire</string>
+						<string name="Name">Galactic Republic</string>
 						<int64 name="SourceAssetId">-1</int64>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
@@ -88907,6 +88921,136 @@ end]]></ProtectedString>
 							</Item>
 						</Item>
 					</Item>
+				</Item>
+			</Item>
+			<Item class="Folder" referent="RBX914FF966DED049F79EE7E20B95CA28A1">
+				<Properties>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<string name="Name">Sounds</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="Sound" referent="RBX0E1E2ED15813424483D805BF1F5C5C77">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<float name="EmitterSize">10</float>
+						<bool name="Looped">false</bool>
+						<string name="Name">Click</string>
+						<bool name="PlayOnRemove">false</bool>
+						<float name="PlaybackSpeed">1</float>
+						<bool name="Playing">false</bool>
+						<token name="RollOffMode">0</token>
+						<Ref name="SoundGroup">null</Ref>
+						<Content name="SoundId"><url>rbxassetid://421058925</url></Content>
+						<int64 name="SourceAssetId">421058925</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<double name="TimePosition">0</double>
+						<float name="Volume">0.5</float>
+						<float name="xmlRead_MaxDistance_3">10000</float>
+					</Properties>
+				</Item>
+			</Item>
+			<Item class="Folder" referent="RBX04287CF0BB8C4A29ABF186ECC5EF7B01">
+				<Properties>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<string name="Name">Music</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="Sound" referent="RBX8E11C84179C4444C923C79EF3D89B10D">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<float name="EmitterSize">10</float>
+						<bool name="Looped">false</bool>
+						<string name="Name">Victory on Christophsis</string>
+						<bool name="PlayOnRemove">false</bool>
+						<float name="PlaybackSpeed">1</float>
+						<bool name="Playing">false</bool>
+						<token name="RollOffMode">0</token>
+						<Ref name="SoundGroup">null</Ref>
+						<Content name="SoundId"><url>rbxassetid://330729244</url></Content>
+						<int64 name="SourceAssetId">330729244</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<double name="TimePosition">0</double>
+						<float name="Volume">0.5</float>
+						<float name="xmlRead_MaxDistance_3">10000</float>
+					</Properties>
+				</Item>
+				<Item class="Sound" referent="RBXBB575D5CCC1F4417907665DC5C6FF3B1">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<float name="EmitterSize">10</float>
+						<bool name="Looped">false</bool>
+						<string name="Name">Ahsoka</string>
+						<bool name="PlayOnRemove">false</bool>
+						<float name="PlaybackSpeed">1</float>
+						<bool name="Playing">false</bool>
+						<token name="RollOffMode">0</token>
+						<Ref name="SoundGroup">null</Ref>
+						<Content name="SoundId"><url>rbxassetid://330659188</url></Content>
+						<int64 name="SourceAssetId">330659188</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<double name="TimePosition">0</double>
+						<float name="Volume">0.5</float>
+						<float name="xmlRead_MaxDistance_3">10000</float>
+					</Properties>
+				</Item>
+				<Item class="Sound" referent="RBX4C333729BE7842FE9BD591DF460F0878">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<float name="EmitterSize">10</float>
+						<bool name="Looped">false</bool>
+						<string name="Name">Battle Strategy</string>
+						<bool name="PlayOnRemove">false</bool>
+						<float name="PlaybackSpeed">1</float>
+						<bool name="Playing">false</bool>
+						<token name="RollOffMode">0</token>
+						<Ref name="SoundGroup">null</Ref>
+						<Content name="SoundId"><url>rbxassetid://205395467</url></Content>
+						<int64 name="SourceAssetId">205395467</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<double name="TimePosition">0</double>
+						<float name="Volume">0.5</float>
+						<float name="xmlRead_MaxDistance_3">10000</float>
+					</Properties>
+				</Item>
+				<Item class="Sound" referent="RBXB5E64AB582554927B71612440E655051">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<float name="EmitterSize">10</float>
+						<bool name="Looped">false</bool>
+						<string name="Name">The Battle of Kamino</string>
+						<bool name="PlayOnRemove">false</bool>
+						<float name="PlaybackSpeed">1</float>
+						<bool name="Playing">false</bool>
+						<token name="RollOffMode">0</token>
+						<Ref name="SoundGroup">null</Ref>
+						<Content name="SoundId"><url>rbxassetid://181948578</url></Content>
+						<int64 name="SourceAssetId">181948578</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<double name="TimePosition">0</double>
+						<float name="Volume">0.5</float>
+						<float name="xmlRead_MaxDistance_3">10000</float>
+					</Properties>
+				</Item>
+				<Item class="Sound" referent="RBX74F3BE2FD68A48DC9FD4AF7CB420D1F7">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<float name="EmitterSize">10</float>
+						<bool name="Looped">false</bool>
+						<string name="Name">The Shield</string>
+						<bool name="PlayOnRemove">false</bool>
+						<float name="PlaybackSpeed">1</float>
+						<bool name="Playing">false</bool>
+						<token name="RollOffMode">0</token>
+						<Ref name="SoundGroup">null</Ref>
+						<Content name="SoundId"><url>rbxassetid://330659100</url></Content>
+						<int64 name="SourceAssetId">330659100</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<double name="TimePosition">0</double>
+						<float name="Volume">0.5</float>
+						<float name="xmlRead_MaxDistance_3">10000</float>
+					</Properties>
 				</Item>
 			</Item>
 		</Item>
