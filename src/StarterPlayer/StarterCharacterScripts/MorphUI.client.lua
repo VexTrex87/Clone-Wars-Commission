@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GroupService = game:GetService("GroupService")
+local ContentProvider = game:GetService("ContentProvider")
 
 local modules = ReplicatedStorage.Modules
 local newTween = require(modules.NewTween)
@@ -25,7 +26,7 @@ local settingsFrame = background.Settings
 
 local selectedMorph = nil
 local settingsData = {}
-local groupRanks = {}
+local groupRanks = MorphsConfiguration.GetPlayerRanks(localPlayer)
 
 local function showHighlighted(element, isHovered)
     local chosenColor = isHovered and MorphUIConfiguration.HighlightedColor or MorphUIConfiguration.UnhighlightedColor
@@ -56,6 +57,7 @@ end
 local function playMusic()
     while true do
         for _,sound in ipairs(musicStorage:GetChildren()) do
+            sound.Volume = settingsData.Music and MorphUIConfiguration.MusicVolume or 0
             sound:Play()
             sound.Stopped:Wait()
             wait(math.random(MorphUIConfiguration.MinMusicDelay, MorphUIConfiguration.MaxMusicDelay))
@@ -63,29 +65,14 @@ local function playMusic()
     end
 end
 
-local function checkIfPlayerMeetsRequirement(requirements)
-    if not next(requirements) then
-        return true
-    end
-
-    for groupId, requiredRanks in pairs(requirements) do
-        if table.find(requiredRanks, groupRanks[groupId]) then
-            return true
-        elseif requiredRanks[#requiredRanks] == "*" and typeof(groupRanks[groupId]) == "number" and groupRanks[groupId] >= requiredRanks[#requiredRanks - 1] then
-            return true
-        end
-    end
-
-end
-
 local function onMouseHover(element, isHovered)
     if element:IsA("TextButton") and element.Parent == topBar then
         -- highlight if hovered or if corresponding frame is visible
         showHighlighted(element, isHovered or background:FindFirstChild(element.Name) and background[element.Name].Visible)
     elseif element:IsA("ImageButton") and element.Parent.Name == "Morphs" then
-        local morphInfo = MorphsConfiguration[element.Parent.Parent.Name] and MorphsConfiguration[element.Parent.Parent.Name][element.Name]
+        local morphInfo = MorphsConfiguration.Data[element.Parent.Parent.Name] and MorphsConfiguration.Data[element.Parent.Parent.Name][element.Name]
         if morphInfo then
-            local meetsRequirement = checkIfPlayerMeetsRequirement(morphInfo.Requirements)
+            local meetsRequirement = MorphsConfiguration.CheckIfPlayerMeetsRequirement(morphInfo.Requirements, groupRanks)
             if meetsRequirement then
                 showHighlighted(element, isHovered or element.Name == selectedMorph)
             elseif #element.Requirements:GetChildren() > 2 then
@@ -144,9 +131,9 @@ local function onButtonClicked(button)
         end
     elseif button:IsDescendantOf(morphSelection) then
         if button.Parent.Name == "Morphs" then
-            local morphInfo = MorphsConfiguration[button.Parent.Parent.Name] and MorphsConfiguration[button.Parent.Parent.Name][button.Name]
+            local morphInfo = MorphsConfiguration.Data[button.Parent.Parent.Name] and MorphsConfiguration.Data[button.Parent.Parent.Name][button.Name]
             if morphInfo then
-                local meetsRequirement = checkIfPlayerMeetsRequirement(morphInfo.Requirements)
+                local meetsRequirement = MorphsConfiguration.CheckIfPlayerMeetsRequirement(morphInfo.Requirements, groupRanks)
                 if meetsRequirement then
                     selectedMorph = button.Name
 
@@ -232,7 +219,7 @@ local function createCredits()
 end
 
 local function createMorphs()
-    for groupName, morphList in pairs(MorphsConfiguration) do
+    for groupName, morphList in pairs(MorphsConfiguration.Data) do
         local newGroup = morphSelection.UIListLayout.GroupTemplate:Clone()
         newGroup.Name = groupName
         newGroup.Title.Text = string.upper(groupName)
@@ -280,7 +267,6 @@ local function createMorphs()
                 for i, groupRole in ipairs(groupRoles) do
                     local rankName = groupRole == "*"
                     for _, groupRoleInfo in ipairs(groupInfo.Roles) do
-                        print(i, #groupRoles, groupRole, groupRoleInfo.Rank)
                         if groupRoleInfo.Rank == groupRole then
                             rankName = groupRoleInfo.Name
                             break
@@ -290,22 +276,11 @@ local function createMorphs()
                         end
                     end
 
-                    print(groupInfo.Name, rankName)
                     if rankName then
                         local newRankSlot = newGroupSlot.UIListLayout.GroupRank:Clone()
                         newRankSlot.Text = rankName
                         newRankSlot.Parent = newGroupSlot
                     end
-                end
- 
-                -- create data for player's role in specific group
-                status = retry(function()
-                    groupRanks[groupId] = localPlayer:GetRankInGroup(groupId)
-                end)
-    
-                if status then
-                    warn("Problem retreiving group rank for group " .. groupId)
-                    print(status)
                 end
             end
         end
@@ -354,8 +329,13 @@ local function __main__()
                 onMouseHover(element, false)
             end)
         end
-
     end
+
+    if not game:IsLoaded() then
+        game.IsLoaded:Wait()
+    end
+
+    ContentProvider:PreloadAsync(UI:GetDescendants())
 
     loading.TextLabel.Text = "Loaded"
     wait(1)
