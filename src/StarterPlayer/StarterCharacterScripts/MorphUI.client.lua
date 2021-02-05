@@ -1,48 +1,20 @@
-local UNHIGHLIGHTED_COLOR = Color3.fromRGB(150, 150, 150)
-local HIGHLIGHTED_COLOR = Color3.fromRGB(255, 255, 255)
-
-local DEACTIVATED_COLOR = Color3.fromRGB(230, 57, 70)
-local DEACTIVATED_POSITION = UDim2.new(0, 2, 0.5, 0)
-local ACTIVATED_COLOR = Color3.fromRGB(57, 230, 80)
-local ACTIVATED_POSITION = UDim2.new(0, 28, 0.5, 0)
-local SWITCH_TWEEN_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut)
-local SETTINGS = {
-    ["Music"] = true
-}
-
-local FLASH_DELAY = 0.2
-local MIN_MUSIC_DELAY, MAX_MUSIC_DELAY = 5, 20
-local CREDITS = {
-    {
-        Username = "ROBLOX",
-        Role = "Manager",
-        Contact = "Twitter: @ROBLOX"
-    },
-    {
-        Username = "VexTrexYT",
-        Role = "Scripter, UI Designer",
-        Contact = "No Contact Information"
-    },
-    {
-        Username = "AdvanceInnovations",
-        Role = "Scripter, UI Designer",
-        Contact = "No Contact Information"
-    }
-}
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GroupService = game:GetService("GroupService")
 
 local modules = ReplicatedStorage.Modules
 local newTween = require(modules.NewTween)
 local retry = require(modules.Retry)
+local configuration = modules.Configuration
+local MorphUIConfiguration = require(configuration.MorphUI)
+local MorphsConfiguration = require(configuration.Morphs)
 
-local morphStorage = ReplicatedStorage.Objects.Morphs
 local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
 local musicStorage = ReplicatedStorage.Objects.Music
 local clickSound = ReplicatedStorage.Objects.Sounds.Click
 
-local UI = Players.LocalPlayer.PlayerGui:WaitForChild("MorphUI")
+local localPlayer = Players.LocalPlayer
+local UI = localPlayer.PlayerGui:WaitForChild("MorphUI")
 local background = UI.Background
 local loading = UI.Loading
 local topBar = background.TopBar
@@ -53,9 +25,10 @@ local settingsFrame = background.Settings
 
 local selectedMorph = nil
 local settingsData = {}
+local groupRanks = {}
 
 local function showHighlighted(element, isHovered)
-    local chosenColor = isHovered and HIGHLIGHTED_COLOR or UNHIGHLIGHTED_COLOR
+    local chosenColor = isHovered and MorphUIConfiguration.HighlightedColor or MorphUIConfiguration.UnhighlightedColor
 
     if element:IsA("TextLabel") or element:IsA("TextButton") then
         element.TextColor3 = chosenColor
@@ -85,9 +58,24 @@ local function playMusic()
         for _,sound in ipairs(musicStorage:GetChildren()) do
             sound:Play()
             sound.Stopped:Wait()
-            wait(math.random(MIN_MUSIC_DELAY, MAX_MUSIC_DELAY))
+            wait(math.random(MorphUIConfiguration.MinMusicDelay, MorphUIConfiguration.MaxMusicDelay))
         end
     end
+end
+
+local function checkIfPlayerMeetsRequirement(requirements)
+    if not next(requirements) then
+        return true
+    end
+
+    for groupId, requiredRanks in pairs(requirements) do
+        if table.find(requiredRanks, groupRanks[groupId]) then
+            return true
+        elseif requiredRanks[#requiredRanks] == "*" and typeof(groupRanks[groupId]) == "number" and groupRanks[groupId] >= requiredRanks[#requiredRanks - 1] then
+            return true
+        end
+    end
+
 end
 
 local function onMouseHover(element, isHovered)
@@ -95,8 +83,16 @@ local function onMouseHover(element, isHovered)
         -- highlight if hovered or if corresponding frame is visible
         showHighlighted(element, isHovered or background:FindFirstChild(element.Name) and background[element.Name].Visible)
     elseif element:IsA("ImageButton") and element.Parent.Name == "Morphs" then
-        -- highlight if hovered or if button is selected morph
-        showHighlighted(element, isHovered or element.Name == selectedMorph)
+        local morphInfo = MorphsConfiguration[element.Parent.Parent.Name] and MorphsConfiguration[element.Parent.Parent.Name][element.Name]
+        if morphInfo then
+            local meetsRequirement = checkIfPlayerMeetsRequirement(morphInfo.Requirements)
+            if meetsRequirement then
+                showHighlighted(element, isHovered or element.Name == selectedMorph)
+            elseif #element.Requirements:GetChildren() > 2 then
+                element.ViewportFrame.Visible = not isHovered
+                element.Requirements.Visible = isHovered
+            end
+        end
     elseif element:IsA("Frame") and element.Parent == morphSelection then
         -- highlight if hovered or if group has selected morph
         showHighlighted(element, isHovered or selectedMorph and element:FindFirstChild(selectedMorph, true))    
@@ -124,9 +120,9 @@ local function onButtonClicked(button)
             else
                 for _ = 1, 3 do
                     topBar.Play.Text = "NO MORPH SELECTED"
-                    wait(FLASH_DELAY)
+                    wait(MorphUIConfiguration.FlashDelay)
                     topBar.Play.Text = ""
-                    wait(FLASH_DELAY)
+                    wait(MorphUIConfiguration.FlashDelay)
                 end
 
                 topBar.Play.Text = "PLAY"
@@ -148,40 +144,55 @@ local function onButtonClicked(button)
         end
     elseif button:IsDescendantOf(morphSelection) then
         if button.Parent.Name == "Morphs" then
-            selectedMorph = button.Name
+            local morphInfo = MorphsConfiguration[button.Parent.Parent.Name] and MorphsConfiguration[button.Parent.Parent.Name][button.Name]
+            if morphInfo then
+                local meetsRequirement = checkIfPlayerMeetsRequirement(morphInfo.Requirements)
+                if meetsRequirement then
+                    selectedMorph = button.Name
 
-            -- highlight pressed morph & highlight others
-            for _, morphButton in ipairs(morphSelection:GetDescendants()) do
-                if morphButton:IsA("ImageButton") and morphButton.Parent.Name == "Morphs" then
-                    showHighlighted(morphButton, morphButton == button)
-                end
-            end
-
-            -- highlight group of pressed morph, unhighlight others
-            for _, morphGroupFrame in ipairs(morphSelection:GetChildren()) do
-                if morphGroupFrame:IsA("Frame") then
-                    showHighlighted(morphGroupFrame.Title, selectedMorph and morphGroupFrame:FindFirstChild(selectedMorph, true))
+                    -- highlight pressed morph & highlight others
+                    for _, morphButton in ipairs(morphSelection:GetDescendants()) do
+                        if morphButton:IsA("ImageButton") and morphButton.Parent.Name == "Morphs" then
+                            showHighlighted(morphButton, morphButton == button)
+                        end
+                    end
+        
+                    -- highlight group of pressed morph, unhighlight others
+                    for _, morphGroupFrame in ipairs(morphSelection:GetChildren()) do
+                        if morphGroupFrame:IsA("Frame") then
+                            showHighlighted(morphGroupFrame.Title, selectedMorph and morphGroupFrame:FindFirstChild(selectedMorph, true))
+                        end
+                    end
+                else
+                    for _ = 1, 3 do
+                        button.MorphName.Text = "REQUIREMENTS NOT MET"
+                        wait(MorphUIConfiguration.FlashDelay)
+                        button.MorphName.Text = ""
+                        wait(MorphUIConfiguration.FlashDelay)
+                    end
+    
+                    button.MorphName.Text = button.Name
                 end
             end
         end
     elseif button:IsDescendantOf(settingsFrame) then
         settingsData[button.Name] = not settingsData[button.Name]
-        newTween(button.BubbleFrame.Bubble, SWITCH_TWEEN_INFO, {Position = settingsData[button.Name] and ACTIVATED_POSITION or DEACTIVATED_POSITION})
-        newTween(button.BubbleFrame.Bubble, SWITCH_TWEEN_INFO, {BackgroundColor3 = settingsData[button.Name] and ACTIVATED_COLOR or DEACTIVATED_COLOR})
+        newTween(button.BubbleFrame.Bubble, MorphUIConfiguration.SwitchTweenInfo, {Position = settingsData[button.Name] and MorphUIConfiguration.ActivatedPosition or MorphUIConfiguration.DeactivatedPosition})
+        newTween(button.BubbleFrame.Bubble, MorphUIConfiguration.SwitchTweenInfo, {BackgroundColor3 = settingsData[button.Name] and MorphUIConfiguration.ActivatedColor or MorphUIConfiguration.DeactivatedColor})
 
         for _,sound in pairs(musicStorage:GetChildren()) do
-            sound.Volume = settingsData[button.Name] and 0.3 or 0
+            sound.Volume = settingsData[button.Name] and MorphUIConfiguration.MusicVolume or 0
         end
     end
 end
 
 local function createSettings()
-    for settingName, defaultOption in pairs(SETTINGS) do
+    for settingName, defaultOption in pairs(MorphUIConfiguration.Settings) do
         local newSlot = settingsFrame.UIListLayout.Template:Clone()
         newSlot.Name = settingName
         newSlot.Title.Text = settingName
-        newSlot.BubbleFrame.Bubble.BackgroundColor3 = defaultOption and ACTIVATED_COLOR or DEACTIVATED_COLOR
-        newSlot.BubbleFrame.Bubble.Position = defaultOption and ACTIVATED_POSITION or DEACTIVATED_POSITION
+        newSlot.BubbleFrame.Bubble.BackgroundColor3 = defaultOption and MorphUIConfiguration.ActivatedColor or MorphUIConfiguration.DeactivatedColor
+        newSlot.BubbleFrame.Bubble.Position = defaultOption and MorphUIConfiguration.ActivatedPosition or MorphUIConfiguration.DeactivatedPosition
         newSlot.Parent = settingsFrame
 
         settingsData[settingName] = defaultOption
@@ -191,7 +202,7 @@ local function createSettings()
 end
 
 local function createCredits()
-    for _, info in ipairs(CREDITS) do
+    for _, info in ipairs(MorphUIConfiguration.Credits) do
         local newSlot = credits.UIListLayout.Template:Clone()
         newSlot.Name = info.Username
         newSlot.Username.Text = info.Username
@@ -207,6 +218,9 @@ local function createCredits()
         if status and image then
             warn("Error occured while retreiving thumbnail for " .. info.Username)
             print(status)
+            continue
+        elseif not image then
+            continue
         else
             newSlot.Thumbnail.Image = image
         end
@@ -218,21 +232,21 @@ local function createCredits()
 end
 
 local function createMorphs()
-    for _, group in ipairs(morphStorage:GetChildren()) do
+    for groupName, morphList in pairs(MorphsConfiguration) do
         local newGroup = morphSelection.UIListLayout.GroupTemplate:Clone()
-        newGroup.Name = group.Name
-        newGroup.Title.Text = string.upper(group.Name)
+        newGroup.Name = groupName
+        newGroup.Title.Text = string.upper(groupName)
         newGroup.Parent = morphSelection
 
-        for _, morph in ipairs(group:GetChildren()) do
-            local newMorph = newGroup.Morphs.UIListLayout.MorphTemplate:Clone()
-            newMorph.Name = morph.Name
-            newMorph.Parent = newGroup.Morphs
+        for morphName, info in pairs(morphList) do
+            local newMorphSlot = newGroup.Morphs.UIListLayout.MorphTemplate:Clone()
+            newMorphSlot.Name = morphName
+            newMorphSlot.Parent = newGroup.Morphs
 
-            newMorph.MorphName.Text = string.upper(morph.Name)
+            newMorphSlot.MorphName.Text = string.upper(morphName)
 
-            local viewPortFrame = newMorph.ViewportFrame
-            local morphClone = morph:Clone()
+            local viewPortFrame = newMorphSlot.ViewportFrame
+            local morphClone = info.Morph:Clone()
             morphClone.Parent = viewPortFrame
 
             local viewportCamera = Instance.new("Camera")
@@ -242,6 +256,58 @@ local function createMorphs()
             viewportCamera.CFrame = morphClone.UpperTorso.Middle.CFrame * CFrame.new(0, 0, -10) * CFrame.Angles(0, math.rad(180), 0)
 
             viewPortFrame.CurrentCamera = viewportCamera
+
+            for groupId, groupRoles in pairs(info.Requirements) do
+                -- create requirements
+                local groupInfo = nil
+                local status = retry(function()
+                    groupInfo = GroupService:GetGroupInfoAsync(groupId)
+                end)
+    
+                if status then
+                    warn("Problem retreiving group info for group " .. groupId)
+                    print(status)
+                    continue
+                elseif not groupInfo then
+                    continue 
+                end
+
+                local newGroupSlot = newMorphSlot.Requirements.UIListLayout.GroupTemplate:Clone()
+                newGroupSlot.Name = groupInfo.Name
+                newGroupSlot.GroupName.Text = groupInfo.Name
+                newGroupSlot.Parent = newMorphSlot.Requirements
+
+                for i, groupRole in ipairs(groupRoles) do
+                    local rankName = groupRole == "*"
+                    for _, groupRoleInfo in ipairs(groupInfo.Roles) do
+                        print(i, #groupRoles, groupRole, groupRoleInfo.Rank)
+                        if groupRoleInfo.Rank == groupRole then
+                            rankName = groupRoleInfo.Name
+                            break
+                        elseif groupRole == "*" and i == #groupRoles then
+                            rankName = groupRoleInfo.Name .. "+"
+                            break
+                        end
+                    end
+
+                    print(groupInfo.Name, rankName)
+                    if rankName then
+                        local newRankSlot = newGroupSlot.UIListLayout.GroupRank:Clone()
+                        newRankSlot.Text = rankName
+                        newRankSlot.Parent = newGroupSlot
+                    end
+                end
+ 
+                -- create data for player's role in specific group
+                status = retry(function()
+                    groupRanks[groupId] = localPlayer:GetRankInGroup(groupId)
+                end)
+    
+                if status then
+                    warn("Problem retreiving group rank for group " .. groupId)
+                    print(status)
+                end
+            end
         end
 
         newGroup.Size = UDim2.new(0, newGroup.Morphs.UIListLayout.AbsoluteContentSize.X, 1, -20)
