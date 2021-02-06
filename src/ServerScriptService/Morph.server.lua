@@ -2,7 +2,8 @@ local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local MorphsConfiguration = require(ReplicatedStorage.Modules.Configuration.Morphs)
+local morphs = require(ReplicatedStorage.Modules.Configuration.Morphs)
+local morph = require(ReplicatedStorage.Modules.Morph)
 local morphPlayer = require(ServerStorage.Modules.MorphPlayer)
 
 local morphPlayerRemote = ReplicatedStorage.Objects.Remotes.MorphPlayer
@@ -16,28 +17,30 @@ local function giveTools(player, tools)
 end
 
 Players.PlayerAdded:Connect(function(player)
-    groupRanks[player.Name] = MorphsConfiguration.GetPlayerRanks(player)
+    groupRanks[player.Name] = morph.GetPlayerRanks(player)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
     groupRanks[player.Name] = nil
 end)
 
-morphPlayerRemote.OnServerInvoke = function(player, morphName)
+morphPlayerRemote.OnServerInvoke = function(player, nameOfRequestedMorph)
     local character = player.Character
-    local morphInfo = nil
 
-    for _, morphList in pairs(MorphsConfiguration.Data) do
-        for morphNameInList, morphInfoInList in pairs(morphList) do
-            if morphNameInList == morphName then
-                morphInfo = morphInfoInList
-                break
+    for _, morphList in pairs(morphs) do
+        for morphName, morphInfo in pairs(morphList) do
+            if morphName ~= nameOfRequestedMorph then
+                continue
             end
-        end
-    end
 
-    if morphInfo and MorphsConfiguration.CheckIfPlayerMeetsRequirement(morphInfo.Requirements, groupRanks[player.Name]) then
-        if character and morphInfo.Morph then
+            if not morph.CheckIfPlayerMeetsRequirement(morphInfo.Requirements, groupRanks[player.Name]) then
+                continue
+            end
+
+            if not character or not morphInfo.Morph then
+                continue
+            end
+
             giveTools(player, morphInfo.Tools)
             morphPlayer(character, morphInfo.Morph)
         end

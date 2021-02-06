@@ -1,3 +1,5 @@
+-- TO DO
+
 local function makeBodyTransparent(character)
 	for _, bodyPart in ipairs(character:GetChildren()) do
 		if bodyPart:IsA("BasePart") then
