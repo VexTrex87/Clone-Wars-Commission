@@ -7,14 +7,9 @@
         "$ignoreUnknownInstances": true,
         "$path": "src/ReplicatedStorage"
       },
-      "ReplicatedFirst": {
-        "$className": "ReplicatedFirst",
-        "$ignoreUnknownInstances": true,
-        "$path": "src/ReplicatedFirst"
-      },
       "ServerScriptService": {
         "$className": "ServerScriptService",
-        "$ignoreUnknownInstances": true,
+        "$ignoreUnknownInstances": false,
         "$path": "src/ServerScriptService"
       },
       "ServerStorage": {
@@ -24,14 +19,9 @@
       },
       "StarterPlayer": {
         "$className": "StarterPlayer",
-        "StarterPlayerScripts": {
-          "$className": "StarterPlayerScripts",
-          "$ignoreUnknownInstances": true,
-          "$path": "src/StarterPlayer/StarterPlayerScripts"
-        },
         "StarterCharacterScripts": {
             "$className": "StarterCharacterScripts",
-            "$ignoreUnknownInstances": true,
+            "$ignoreUnknownInstances": false,
             "$path": "src/StarterPlayer/StarterCharacterScripts"
         },
         "$ignoreUnknownInstances": true
