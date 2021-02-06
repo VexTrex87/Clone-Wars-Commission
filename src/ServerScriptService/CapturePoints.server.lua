@@ -7,10 +7,7 @@ local region = Region3.new(point1.Position,point2.Position)
 local ignorelist = {point1, point2}
 local partsInRegion = {}
 local playerInBounds = {}
-local teamCount = {
-    red = 0,
-    blue = 0
-}
+local teamsInRegion = {}
 
 local tween = game:GetService("TweenService")
 
@@ -27,13 +24,18 @@ regionVisual.CFrame = region.CFrame
 
 -- // Functions \\ --
 
+local function NewThread(func,...)
+    local a = coroutine.wrap(func)
+    a(...)
+end
+
 function GetTeamColors()
-    local teamsInRegion = {}
-    for _,player in playerInBounds do
+    teamsInRegion = {}
+    for _,player in pairs (playerInBounds) do
         if not table.find(teamsInRegion,player.TeamColor) then
-            teamsInRegion[player.TeamColor] = 1
+            teamsInRegion[tostring(player.TeamColor)] = 1
         else
-            teamsInRegion[player.TeamColor] += 1
+            teamsInRegion[tostring(player.TeamColor)] += 1
         end
     end
 end
@@ -50,6 +52,7 @@ function RemovePlayers()
 end
 
 function AddPlayers()
+    playerInBounds = {}
     for _,part in pairs(partsInRegion or {}) do
         local Char = part.Parent
         local player = game.Players:FindFirstChild(Char.Name)
@@ -60,28 +63,16 @@ function AddPlayers()
     end
 end
 
-function PulseRed()
-    regionVisual.Transparency = 0
-    regionVisual.Color = Color3.new(1,0,0)
-    local redPulse = tween:Create(regionVisual,TweenInfo.new(1),{Transparency = 1})
-    redPulse:Play()
-
-end
-
-function PulseBlue()
-    regionVisual.Transparency = 0
-    regionVisual.Color = Color3.new(0.015686, 0, 1)
-    local bluePulse = tween:Create(regionVisual,TweenInfo.new(1),{Transparency = 1})
-    bluePulse:Play()
-end
-
 function AddPoints()
-    if teamCount.red > teamCount.blue then
-        PulseRed()
-    elseif teamCount.blue > teamCount.red then
-        PulseBlue()
-    elseif teamCount.red < 0 and teamCount.blue < 0 then
-        regionVisual.Color = Color3.new(255,255,255)
+    local highestTeam = nil
+    local highestTeamCount = 0
+
+    for teams,count in pairs(teamsInRegion) do
+        if count > highestTeamCount then
+            highestTeamCount = count
+            highestTeam = teams
+            
+        end
     end
 end
 
@@ -92,8 +83,7 @@ while wait(1) do
     RemovePlayers()
     AddPlayers()
     AddPoints()
-    print(teamCount.red)
-    print(teamCount.blue)
+    GetTeamColors()
 end
 
 
