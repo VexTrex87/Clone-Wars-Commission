@@ -6,53 +6,39 @@ return {
     ["Colored Warriors"] = {
         ["Chocolate Clone Trooper"] = {
             Morph = morphStorage["Colored Warriors"]["Chocolate Clone Trooper"],
-            Tools = {
-                toolStorage.Shotgun
-            },
+            Tools = {},
             Requirements = {
                 [543792] = {1} -- random group, specific rank
             },
         },
         ["Clay Clone Trooper"] = {
             Morph = morphStorage["Colored Warriors"]["Clay Clone Trooper"],
-            Tools = {
-                toolStorage.Shotgun
-            },
+            Tools = {},
             Requirements = {},
         },
         ["Gold Clone Trooper"] = {
             Morph = morphStorage["Colored Warriors"]["Gold Clone Trooper"],
-            Tools = {
-                toolStorage.Shotgun
-            },
+            Tools = {},
             Requirements = {},
         },
         ["Green Clone Trooper"] = {
             Morph = morphStorage["Colored Warriors"]["Green Clone Trooper"],
-            Tools = {
-                toolStorage.Shotgun
-            },
+            Tools = {},
             Requirements = {},
         },
         ["Red Clone Trooper"] = {
             Morph = morphStorage["Colored Warriors"]["Red Clone Trooper"],
-            Tools = {
-                toolStorage.Shotgun
-            },
+            Tools = {},
             Requirements = {},
         },
         ["Water Clone Trooper"] = {
             Morph = morphStorage["Colored Warriors"]["Water Clone Trooper"],
-            Tools = {
-                toolStorage.Shotgun
-            },
+            Tools = {},
             Requirements = {},
         },
         ["Yellow Clone Trooper"] = {
             Morph = morphStorage["Colored Warriors"]["Yellow Clone Trooper"],
-            Tools = {
-                toolStorage.Shotgun
-            },
+            Tools = {},
             Requirements = {},
         },
     },
@@ -60,7 +46,7 @@ return {
         ["Clone Trooper"] = {
             Morph = morphStorage["Galactic Republic"]["Clone Trooper"],
             Tools = {
-                toolStorage["Assult Rifle"]
+                toolStorage["Sword"]
             },
             Requirements = {
                 [6458408] = {200, "*"} -- neo systems, minimum rank
