@@ -1,7 +1,7 @@
 local UPDATE_DELAY = 1
 local TAG = "ConquestPoint"
 local MAX_PARTS_IN_REGION = math.huge
-local MAX_SECONDS_TO_CAPTURE = 10
+local MAX_SECONDS_TO_CAPTURE = 5
 local FLASH_TWEEN_INFO = TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut)
 local NEUTRAL_COLOR = BrickColor.White()
 
@@ -37,43 +37,50 @@ local function initiateCapturing(info)
     end
 
     local highestTeamCount = 0
+    local highestTeam = nil
     for teamName, teamCount in pairs(info.TeamsInRegion) do
         if teamCount > highestTeamCount then
             highestTeamCount = teamCount
-            info.NewCapturingTeam = teamName
+            highestTeam = teamName
         elseif teamCount == highestTeamCount then
-            info.NewCapturingTeam = nil
+            highestTeam = nil
         end
     end
 
-    if info.NewCapturingTeam then
-        if not info.CapturingTeam or info.NewCapturingTeam == info.CapturingTeam then
-            if info.TimeCapturing < MAX_SECONDS_TO_CAPTURE then
-                info.TimeCapturing += 1
+    for teamName, _ in pairs(info.TeamsInRegion) do
+        if not info.TeamsCapturing[teamName] then
+            info.TeamsCapturing[teamName] = 0
+        end
+    end
+
+    for teamName, secondsCapturing in pairs(info.TeamsCapturing) do
+        if teamName == highestTeam then
+            if secondsCapturing < MAX_SECONDS_TO_CAPTURE then
+                info.TeamsCapturing[teamName] += 1
+                if info.TeamsCapturing[teamName] == MAX_SECONDS_TO_CAPTURE then
+                    info.CapturingTeam = teamName
+                end
             end
-        elseif info.CapturingTeam and info.NewCapturingTeam ~= info.CapturingTeam and info.TimeCapturing > 0 then
-            info.TimeCapturing -= 1
+        elseif highestTeam and info.TeamsCapturing[teamName] > 0 then
+            info.TeamsCapturing[teamName] -= 1
         end
     end
-
-    if info.TimeCapturing == MAX_SECONDS_TO_CAPTURE and info.NewCapturingTeam then
-        info.CapturingTeam = info.NewCapturingTeam
-    elseif info.TimeCapturing == 0 then
-        info.CapturingTeam = nil
-    end
-
-    print(info.TimeCapturing)
 end
+
 local function visualize(info)
-    local pointColor = not info.CapturingTeam and NEUTRAL_COLOR or Teams[info.CapturingTeam].TeamColor
-    if info.TimeCapturing == MAX_SECONDS_TO_CAPTURE or info.TimeCapturing == 0 then
-        info.ConquestPoint.BrickColor = pointColor
-    elseif info.TimeCapturing > 0 then
-        newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
-        newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = pointColor.Color}).Completed:Wait()
+    if info.CapturingTeam then
+        local timeCapturing = info.TeamsCapturing[info.CapturingTeam]
+        local teamColor = Teams[info.CapturingTeam].TeamColor
+        if timeCapturing == MAX_SECONDS_TO_CAPTURE then
+            info.ConquestPoint.BrickColor = teamColor
+        else
+            newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
+            newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = teamColor.Color}).Completed:Wait()
+        end
+    else
+        info.ConquestPoint.BrickColor = NEUTRAL_COLOR
     end
 end
-
 
 local function __main__()
     collection(TAG, function(conquestPoint)
@@ -84,10 +91,8 @@ local function __main__()
             PartsInRegion = {},
             PlayersInRegion = {},
             TeamsInRegion = {},
-
+            TeamsCapturing = {},
             CapturingTeam = nil,
-            NewCapturingTeam = nil,
-            TimeCapturing = 0,
 
             IGNORE_LIST = {},
         }
