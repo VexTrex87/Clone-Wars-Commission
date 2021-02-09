@@ -24,7 +24,7 @@ local function addPlayers(info)
     end
 end
 
-local function findCapturingTeam(info)
+local function initiateCapturing(info)
     table.clear(info.TeamsInRegion)
     info.NewCapturingTeam = nil
 
@@ -45,22 +45,18 @@ local function findCapturingTeam(info)
             info.NewCapturingTeam = nil
         end
     end
-end
 
-local function initiateCapturing(info)
-    print(info.CapturingTeam, info.NewCapturingTeam)
-
-    if not info.CapturingTeam and info.NewCapturingTeam or info.NewCapturingTeam and info.CapturingTeam == info.NewCapturingTeam then
-        if info.TimeCapturing < MAX_SECONDS_TO_CAPTURE then
-            info.TimeCapturing += 1
+    if info.NewCapturingTeam then
+        if not info.CapturingTeam or info.NewCapturingTeam == info.CapturingTeam then
+            if info.TimeCapturing < MAX_SECONDS_TO_CAPTURE then
+                info.TimeCapturing += 1
+            end
+        elseif info.CapturingTeam and info.NewCapturingTeam ~= info.CapturingTeam and info.TimeCapturing > 0 then
+            info.TimeCapturing -= 1
         end
-    elseif info.NewCapturingTeam and info.CapturingTeam ~= info.NewCapturingTeam and info.TimeCapturing > 0 then
-        info.TimeCapturing -= 1
-    elseif not info.CapturingTeam and not info.NewCapturingTeam and info.TimeCapturing > 0 then
-        info.TimeCapturing -= 1
     end
 
-    if info.TimeCapturing == MAX_SECONDS_TO_CAPTURE and info.NewCapturingTeam and info.CapturingTeam ~= info.NewCapturingTeam then
+    if info.TimeCapturing == MAX_SECONDS_TO_CAPTURE and info.NewCapturingTeam then
         info.CapturingTeam = info.NewCapturingTeam
     elseif info.TimeCapturing == 0 then
         info.CapturingTeam = nil
@@ -68,16 +64,16 @@ local function initiateCapturing(info)
 
     print(info.TimeCapturing)
 end
-
 local function visualize(info)
     local pointColor = not info.CapturingTeam and NEUTRAL_COLOR or Teams[info.CapturingTeam].TeamColor
     if info.TimeCapturing == MAX_SECONDS_TO_CAPTURE or info.TimeCapturing == 0 then
         info.ConquestPoint.BrickColor = pointColor
     elseif info.TimeCapturing > 0 then
-        newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = pointColor.Color}).Completed:Wait()
         newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
+        newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = pointColor.Color}).Completed:Wait()
     end
 end
+
 
 local function __main__()
     collection(TAG, function(conquestPoint)
@@ -99,12 +95,9 @@ local function __main__()
         while true do
             info.PartsInRegion = Workspace:FindPartsInRegion3WithIgnoreList(info.Region, info.IGNORE_LIST, MAX_PARTS_IN_REGION)
             addPlayers(info)
-            findCapturingTeam(info)
             initiateCapturing(info)
             visualize(info)
             wait(UPDATE_DELAY)
-            
-            warn("----------------------")
         end
     end)
 end
