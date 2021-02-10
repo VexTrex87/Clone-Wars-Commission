@@ -3,6 +3,7 @@ local TAG = "ConquestPoint"
 local MAX_PARTS_IN_REGION = math.huge
 local MAX_SECONDS_TO_CAPTURE = 5
 local FLASH_TWEEN_INFO = TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut)
+local FILL_UI_TWEEN_INFO = {Enum.EasingDirection.In, Enum.EasingStyle.Linear, 0.5, true}
 local NEUTRAL_COLOR = BrickColor.White()
 
 local Workspace = game:GetService("Workspace")
@@ -13,6 +14,7 @@ local Teams = game:GetService("Teams")
 local modules = ReplicatedStorage.Modules
 local collection = require(modules.Collection)
 local newTween = require(modules.NewTween)
+local newThread = require(modules.NewThread)
 
 local function addPlayers(info)
     table.clear(info.PlayersInRegion)
@@ -25,20 +27,20 @@ local function addPlayers(info)
 end
 
 local function initiateCapturing(info)
-    table.clear(info.TeamsInRegion)
+    local teamsInRegion = {}
     info.NewCapturingTeam = nil
 
     for _, player in pairs(info.PlayersInRegion) do
-        if not info.TeamsInRegion[player.Team.Name] then
-            info.TeamsInRegion[player.Team.Name] = 1
+        if not teamsInRegion[player.Team.Name] then
+            teamsInRegion[player.Team.Name] = 1
         else
-            info.TeamsInRegion[player.Team.Name] += 1
+            teamsInRegion[player.Team.Name] += 1
         end
     end
 
     local highestTeamCount = 0
     local highestTeam = nil
-    for teamName, teamCount in pairs(info.TeamsInRegion) do
+    for teamName, teamCount in pairs(teamsInRegion) do
         if teamCount > highestTeamCount then
             highestTeamCount = teamCount
             highestTeam = teamName
@@ -47,15 +49,23 @@ local function initiateCapturing(info)
         end
     end
 
-    for teamName, _ in pairs(info.TeamsInRegion) do
+    for teamName, _ in pairs(teamsInRegion) do
         if not info.TeamsCapturing[teamName] then
             info.TeamsCapturing[teamName] = 0
         end
     end
 
+    local areAllTeamsAreNeutral = true
+    for teamName, secondsCapturing in pairs(info.TeamsCapturing) do
+        if teamName ~= highestTeam and secondsCapturing ~= 0 then
+            areAllTeamsAreNeutral = false
+            break
+        end
+    end
+
     for teamName, secondsCapturing in pairs(info.TeamsCapturing) do
         if teamName == highestTeam then
-            if secondsCapturing < MAX_SECONDS_TO_CAPTURE then
+            if secondsCapturing < MAX_SECONDS_TO_CAPTURE and areAllTeamsAreNeutral then
                 info.TeamsCapturing[teamName] += 1
                 if info.TeamsCapturing[teamName] == MAX_SECONDS_TO_CAPTURE then
                     info.CapturingTeam = teamName
@@ -68,17 +78,36 @@ local function initiateCapturing(info)
 end
 
 local function visualize(info)
-    if info.CapturingTeam then
-        local timeCapturing = info.TeamsCapturing[info.CapturingTeam]
-        local teamColor = Teams[info.CapturingTeam].TeamColor
+    local largestTeam = nil
+    local longestTimeCapturing = 0
+    for teamName, timeCapturing in pairs(info.TeamsCapturing) do
+        if timeCapturing > longestTimeCapturing then
+            largestTeam = teamName
+            longestTimeCapturing = timeCapturing
+        elseif timeCapturing == longestTimeCapturing then
+            largestTeam = nil
+        end
+    end
+
+    local specificTeam = largestTeam
+    if specificTeam then
+        local timeCapturing = info.TeamsCapturing[specificTeam]
+        local teamColor = Teams[specificTeam].TeamColor
+    
+        info.FillUI.BackgroundColor3 = teamColor.Color
+        info.FillUI:TweenSize(UDim2.fromScale(timeCapturing / MAX_SECONDS_TO_CAPTURE, 1), table.unpack(FILL_UI_TWEEN_INFO))
+    
         if timeCapturing == MAX_SECONDS_TO_CAPTURE then
             info.ConquestPoint.BrickColor = teamColor
         else
-            newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
-            newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = teamColor.Color}).Completed:Wait()
+            newThread(function()
+                newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
+                newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = teamColor.Color})
+            end)
         end
     else
         info.ConquestPoint.BrickColor = NEUTRAL_COLOR
+        info.FillUI:TweenSize(UDim2.fromScale(0, 1), table.unpack(FILL_UI_TWEEN_INFO))
     end
 end
 
@@ -86,11 +115,11 @@ local function __main__()
     collection(TAG, function(conquestPoint)
         local info = {
             ConquestPoint = conquestPoint,
+            FillUI = conquestPoint.BillboardGui.Background.Fill,
             Region = Region3.new(conquestPoint.Position - conquestPoint.Size / 2, conquestPoint.Position + conquestPoint.Size / 2),
 
             PartsInRegion = {},
             PlayersInRegion = {},
-            TeamsInRegion = {},
             TeamsCapturing = {},
             CapturingTeam = nil,
 

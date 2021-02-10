@@ -65,27 +65,27 @@
 			<Properties>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<CoordinateFrame name="CFrame">
-					<X>42.7746468</X>
-					<Y>23.9000492</Y>
-					<Z>51.3768425</Z>
-					<R00>-0.999999046</R00>
-					<R01>-0.000597110717</R01>
-					<R02>0.0012931847</R02>
-					<R10>-5.82076609e-11</R10>
-					<R11>0.907890975</R11>
-					<R12>0.419206411</R12>
-					<R20>-0.00142438337</R20>
-					<R21>0.419206023</R21>
-					<R22>-0.907890022</R22>
+					<X>59.2850113</X>
+					<Y>10.7492933</Y>
+					<Z>40.5849304</Z>
+					<R00>-0.665358424</R00>
+					<R01>-0.0136649935</R01>
+					<R02>0.746398985</R02>
+					<R10>-0</R10>
+					<R11>0.999832511</R11>
+					<R12>0.0183048267</R12>
+					<R20>-0.746524036</R20>
+					<R21>0.0121792704</R21>
+					<R22>-0.665247023</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
 				<float name="FieldOfView">70</float>
 				<token name="FieldOfViewMode">0</token>
 				<CoordinateFrame name="Focus">
-					<X>42.7720604</X>
-					<Y>23.0616379</Y>
-					<Z>53.1926193</Z>
+					<X>57.7922134</X>
+					<Y>10.7126837</Y>
+					<Z>41.9154243</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -422,14 +422,14 @@ gcLgc4RKxr21zq2UlJSM]]></BinaryString>
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>29</X>
-					<Y>10</Y>
-					<Z>65</Z>
-					<R00>1</R00>
-					<R01>0</R01>
+					<X>30.9999924</X>
+					<Y>9.99999428</Y>
+					<Z>71</Z>
+					<R00>0</R00>
+					<R01>-0.999999404</R01>
 					<R02>0</R02>
-					<R10>0</R10>
-					<R11>1</R11>
+					<R10>0.999999404</R10>
+					<R11>0</R11>
 					<R12>0</R12>
 					<R20>0</R20>
 					<R21>0</R21>
@@ -479,42 +479,229 @@ gcLgc4RKxr21zq2UlJSM]]></BinaryString>
 					<Z>0</Z>
 				</Vector3>
 				<token name="formFactorRaw">1</token>
-				<token name="shape">1</token>
+				<token name="shape">2</token>
 				<Vector3 name="size">
 					<X>20</X>
 					<Y>20</Y>
 					<Z>20</Z>
 				</Vector3>
 			</Properties>
-			<Item class="Weld" referent="RBX6606EECA399848AAB72865B26588F216">
+			<Item class="BillboardGui" referent="RBX60015E6412C942EF807CEDE522164098">
+				<Properties>
+					<bool name="Active">true</bool>
+					<Ref name="Adornee">null</Ref>
+					<bool name="AlwaysOnTop">false</bool>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<bool name="AutoLocalize">true</bool>
+					<bool name="ClipsDescendants">true</bool>
+					<float name="DistanceLowerLimit">0</float>
+					<float name="DistanceStep">0</float>
+					<float name="DistanceUpperLimit">-1</float>
+					<bool name="Enabled">true</bool>
+					<Vector3 name="ExtentsOffset">
+						<X>0</X>
+						<Y>0</Y>
+						<Z>0</Z>
+					</Vector3>
+					<Vector3 name="ExtentsOffsetWorldSpace">
+						<X>0</X>
+						<Y>0</Y>
+						<Z>0</Z>
+					</Vector3>
+					<float name="LightInfluence">0</float>
+					<float name="MaxDistance">INF</float>
+					<string name="Name">BillboardGui</string>
+					<Ref name="PlayerToHideFrom">null</Ref>
+					<bool name="ResetOnSpawn">true</bool>
+					<Ref name="RootLocalizationTable">null</Ref>
+					<UDim2 name="Size">
+						<XS>30</XS>
+						<XO>0</XO>
+						<YS>3</YS>
+						<YO>0</YO>
+					</UDim2>
+					<Vector2 name="SizeOffset">
+						<X>0</X>
+						<Y>0</Y>
+					</Vector2>
+					<int64 name="SourceAssetId">-1</int64>
+					<Vector3 name="StudsOffset">
+						<X>0</X>
+						<Y>15</Y>
+						<Z>0</Z>
+					</Vector3>
+					<Vector3 name="StudsOffsetWorldSpace">
+						<X>0</X>
+						<Y>0</Y>
+						<Z>0</Z>
+					</Vector3>
+					<BinaryString name="Tags"></BinaryString>
+					<token name="ZIndexBehavior">1</token>
+				</Properties>
+				<Item class="Frame" referent="RBX9E4A3E46C2674BBABB6EF800F06D72A4">
+					<Properties>
+						<bool name="Active">false</bool>
+						<Vector2 name="AnchorPoint">
+							<X>0</X>
+							<Y>0</Y>
+						</Vector2>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<bool name="AutoLocalize">true</bool>
+						<token name="AutomaticSize">0</token>
+						<Color3 name="BackgroundColor3">
+							<R>0</R>
+							<G>0</G>
+							<B>0</B>
+						</Color3>
+						<float name="BackgroundTransparency">0</float>
+						<Color3 name="BorderColor3">
+							<R>0.105882362</R>
+							<G>0.164705887</G>
+							<B>0.207843155</B>
+						</Color3>
+						<token name="BorderMode">0</token>
+						<int name="BorderSizePixel">1</int>
+						<bool name="ClipsDescendants">false</bool>
+						<bool name="Draggable">false</bool>
+						<int name="LayoutOrder">0</int>
+						<string name="Name">Background</string>
+						<Ref name="NextSelectionDown">null</Ref>
+						<Ref name="NextSelectionLeft">null</Ref>
+						<Ref name="NextSelectionRight">null</Ref>
+						<Ref name="NextSelectionUp">null</Ref>
+						<UDim2 name="Position">
+							<XS>0</XS>
+							<XO>0</XO>
+							<YS>0</YS>
+							<YO>0</YO>
+						</UDim2>
+						<Ref name="RootLocalizationTable">null</Ref>
+						<float name="Rotation">0</float>
+						<bool name="Selectable">false</bool>
+						<Ref name="SelectionImageObject">null</Ref>
+						<UDim2 name="Size">
+							<XS>1</XS>
+							<XO>0</XO>
+							<YS>1</YS>
+							<YO>0</YO>
+						</UDim2>
+						<token name="SizeConstraint">0</token>
+						<int64 name="SourceAssetId">-1</int64>
+						<token name="Style">0</token>
+						<BinaryString name="Tags"></BinaryString>
+						<bool name="Visible">true</bool>
+						<int name="ZIndex">1</int>
+					</Properties>
+					<Item class="Frame" referent="RBX3F0CE9E592F14F519A0E8AA01C5AF910">
+						<Properties>
+							<bool name="Active">false</bool>
+							<Vector2 name="AnchorPoint">
+								<X>0</X>
+								<Y>0</Y>
+							</Vector2>
+							<BinaryString name="AttributesSerialize"></BinaryString>
+							<bool name="AutoLocalize">true</bool>
+							<token name="AutomaticSize">0</token>
+							<Color3 name="BackgroundColor3">
+								<R>1</R>
+								<G>1</G>
+								<B>1</B>
+							</Color3>
+							<float name="BackgroundTransparency">0</float>
+							<Color3 name="BorderColor3">
+								<R>0.105882362</R>
+								<G>0.164705887</G>
+								<B>0.207843155</B>
+							</Color3>
+							<token name="BorderMode">0</token>
+							<int name="BorderSizePixel">1</int>
+							<bool name="ClipsDescendants">false</bool>
+							<bool name="Draggable">false</bool>
+							<int name="LayoutOrder">0</int>
+							<string name="Name">Fill</string>
+							<Ref name="NextSelectionDown">null</Ref>
+							<Ref name="NextSelectionLeft">null</Ref>
+							<Ref name="NextSelectionRight">null</Ref>
+							<Ref name="NextSelectionUp">null</Ref>
+							<UDim2 name="Position">
+								<XS>0</XS>
+								<XO>0</XO>
+								<YS>0</YS>
+								<YO>0</YO>
+							</UDim2>
+							<Ref name="RootLocalizationTable">null</Ref>
+							<float name="Rotation">0</float>
+							<bool name="Selectable">false</bool>
+							<Ref name="SelectionImageObject">null</Ref>
+							<UDim2 name="Size">
+								<XS>0</XS>
+								<XO>0</XO>
+								<YS>0</YS>
+								<YO>0</YO>
+							</UDim2>
+							<token name="SizeConstraint">0</token>
+							<int64 name="SourceAssetId">-1</int64>
+							<token name="Style">0</token>
+							<BinaryString name="Tags"></BinaryString>
+							<bool name="Visible">true</bool>
+							<int name="ZIndex">1</int>
+						</Properties>
+						<Item class="UICorner" referent="RBX8EC53B9AB03F4FD19B46ABA01C6C9351">
+							<Properties>
+								<BinaryString name="AttributesSerialize"></BinaryString>
+								<UDim name="CornerRadius">
+									<S>1</S>
+									<O>0</O>
+								</UDim>
+								<string name="Name">UICorner</string>
+								<int64 name="SourceAssetId">-1</int64>
+								<BinaryString name="Tags"></BinaryString>
+							</Properties>
+						</Item>
+					</Item>
+					<Item class="UICorner" referent="RBXE841D580AD8F4E8AAAA2AC5C91B357BA">
+						<Properties>
+							<BinaryString name="AttributesSerialize"></BinaryString>
+							<UDim name="CornerRadius">
+								<S>1</S>
+								<O>0</O>
+							</UDim>
+							<string name="Name">UICorner</string>
+							<int64 name="SourceAssetId">-1</int64>
+							<BinaryString name="Tags"></BinaryString>
+						</Properties>
+					</Item>
+				</Item>
+			</Item>
+			<Item class="Weld" referent="RBXF5536943127C4067B48D151332407D85">
 				<Properties>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<CoordinateFrame name="C0">
-						<X>0</X>
-						<Y>-10</Y>
+						<X>-9.99998856</X>
+						<Y>0</Y>
 						<Z>0</Z>
-						<R00>1</R00>
+						<R00>0</R00>
 						<R01>0</R01>
-						<R02>0</R02>
+						<R02>-0.999999404</R02>
 						<R10>0</R10>
-						<R11>0</R11>
-						<R12>-1</R12>
-						<R20>0</R20>
-						<R21>1</R21>
+						<R11>0.999998808</R11>
+						<R12>0</R12>
+						<R20>1</R20>
+						<R21>0</R21>
 						<R22>0</R22>
 					</CoordinateFrame>
 					<CoordinateFrame name="C1">
-						<X>29</X>
+						<X>30.9999924</X>
 						<Y>10</Y>
-						<Z>65</Z>
-						<R00>1</R00>
-						<R01>0</R01>
+						<Z>71</Z>
+						<R00>0</R00>
+						<R01>-0.999999404</R01>
 						<R02>0</R02>
 						<R10>0</R10>
 						<R11>0</R11>
 						<R12>-1</R12>
-						<R20>0</R20>
-						<R21>1</R21>
+						<R20>1</R20>
+						<R21>0</R21>
 						<R22>0</R22>
 					</CoordinateFrame>
 					<bool name="Enabled">true</bool>
@@ -542,7 +729,7 @@ gcLgc4RKxr21zq2UlJSM]]></BinaryString>
 				<CoordinateFrame name="CFrame">
 					<X>66</X>
 					<Y>0.5</Y>
-					<Z>74</Z>
+					<Z>78</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -624,7 +811,7 @@ gcLgc4RKxr21zq2UlJSM]]></BinaryString>
 					<float name="Transparency">0</float>
 				</Properties>
 			</Item>
-			<Item class="Weld" referent="RBX77FDFAE806EC42DEB96C95A5BC77A4F5">
+			<Item class="Weld" referent="RBX02B5769894394303BE4A120DC85A9EF1">
 				<Properties>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<CoordinateFrame name="C0">
@@ -644,7 +831,7 @@ gcLgc4RKxr21zq2UlJSM]]></BinaryString>
 					<CoordinateFrame name="C1">
 						<X>66</X>
 						<Y>10</Y>
-						<Z>74</Z>
+						<Z>78</Z>
 						<R00>1</R00>
 						<R01>0</R01>
 						<R02>0</R02>
@@ -6423,6 +6610,7 @@ local TAG = "ConquestPoint"
 local MAX_PARTS_IN_REGION = math.huge
 local MAX_SECONDS_TO_CAPTURE = 5
 local FLASH_TWEEN_INFO = TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut)
+local FILL_UI_TWEEN_INFO = {Enum.EasingDirection.In, Enum.EasingStyle.Linear, 0.5, true}
 local NEUTRAL_COLOR = BrickColor.White()
 
 local Workspace = game:GetService("Workspace")
@@ -6433,6 +6621,7 @@ local Teams = game:GetService("Teams")
 local modules = ReplicatedStorage.Modules
 local collection = require(modules.Collection)
 local newTween = require(modules.NewTween)
+local newThread = require(modules.NewThread)
 
 local function addPlayers(info)
     table.clear(info.PlayersInRegion)
@@ -6445,20 +6634,20 @@ local function addPlayers(info)
 end
 
 local function initiateCapturing(info)
-    table.clear(info.TeamsInRegion)
+    local teamsInRegion = {}
     info.NewCapturingTeam = nil
 
     for _, player in pairs(info.PlayersInRegion) do
-        if not info.TeamsInRegion[player.Team.Name] then
-            info.TeamsInRegion[player.Team.Name] = 1
+        if not teamsInRegion[player.Team.Name] then
+            teamsInRegion[player.Team.Name] = 1
         else
-            info.TeamsInRegion[player.Team.Name] += 1
+            teamsInRegion[player.Team.Name] += 1
         end
     end
 
     local highestTeamCount = 0
     local highestTeam = nil
-    for teamName, teamCount in pairs(info.TeamsInRegion) do
+    for teamName, teamCount in pairs(teamsInRegion) do
         if teamCount > highestTeamCount then
             highestTeamCount = teamCount
             highestTeam = teamName
@@ -6467,15 +6656,23 @@ local function initiateCapturing(info)
         end
     end
 
-    for teamName, _ in pairs(info.TeamsInRegion) do
+    for teamName, _ in pairs(teamsInRegion) do
         if not info.TeamsCapturing[teamName] then
             info.TeamsCapturing[teamName] = 0
         end
     end
 
+    local areAllTeamsAreNeutral = true
+    for teamName, secondsCapturing in pairs(info.TeamsCapturing) do
+        if teamName ~= highestTeam and secondsCapturing ~= 0 then
+            areAllTeamsAreNeutral = false
+            break
+        end
+    end
+
     for teamName, secondsCapturing in pairs(info.TeamsCapturing) do
         if teamName == highestTeam then
-            if secondsCapturing < MAX_SECONDS_TO_CAPTURE then
+            if secondsCapturing < MAX_SECONDS_TO_CAPTURE and areAllTeamsAreNeutral then
                 info.TeamsCapturing[teamName] += 1
                 if info.TeamsCapturing[teamName] == MAX_SECONDS_TO_CAPTURE then
                     info.CapturingTeam = teamName
@@ -6488,17 +6685,36 @@ local function initiateCapturing(info)
 end
 
 local function visualize(info)
-    if info.CapturingTeam then
-        local timeCapturing = info.TeamsCapturing[info.CapturingTeam]
-        local teamColor = Teams[info.CapturingTeam].TeamColor
+    local largestTeam = nil
+    local longestTimeCapturing = 0
+    for teamName, timeCapturing in pairs(info.TeamsCapturing) do
+        if timeCapturing > longestTimeCapturing then
+            largestTeam = teamName
+            longestTimeCapturing = timeCapturing
+        elseif timeCapturing == longestTimeCapturing then
+            largestTeam = nil
+        end
+    end
+
+    local specificTeam = largestTeam
+    if specificTeam then
+        local timeCapturing = info.TeamsCapturing[specificTeam]
+        local teamColor = Teams[specificTeam].TeamColor
+    
+        info.FillUI.BackgroundColor3 = teamColor.Color
+        info.FillUI:TweenSize(UDim2.fromScale(timeCapturing / MAX_SECONDS_TO_CAPTURE, 1), table.unpack(FILL_UI_TWEEN_INFO))
+    
         if timeCapturing == MAX_SECONDS_TO_CAPTURE then
             info.ConquestPoint.BrickColor = teamColor
         else
-            newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
-            newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = teamColor.Color}).Completed:Wait()
+            newThread(function()
+                newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
+                newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = teamColor.Color})
+            end)
         end
     else
         info.ConquestPoint.BrickColor = NEUTRAL_COLOR
+        info.FillUI:TweenSize(UDim2.fromScale(0, 1), table.unpack(FILL_UI_TWEEN_INFO))
     end
 end
 
@@ -6506,11 +6722,11 @@ local function __main__()
     collection(TAG, function(conquestPoint)
         local info = {
             ConquestPoint = conquestPoint,
+            FillUI = conquestPoint.BillboardGui.Background.Fill,
             Region = Region3.new(conquestPoint.Position - conquestPoint.Size / 2, conquestPoint.Position + conquestPoint.Size / 2),
 
             PartsInRegion = {},
             PlayersInRegion = {},
-            TeamsInRegion = {},
             TeamsCapturing = {},
             CapturingTeam = nil,
 
