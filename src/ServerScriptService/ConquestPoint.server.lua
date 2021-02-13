@@ -98,14 +98,21 @@ local function visualize(info)
         info.FillUI:TweenSize(UDim2.fromScale(timeCapturing / MAX_SECONDS_TO_CAPTURE, 1), table.unpack(FILL_UI_TWEEN_INFO))
     
         if timeCapturing == MAX_SECONDS_TO_CAPTURE then
+            info.TeamCapturingValue.Value = specificTeam
+            info.PointName.TextColor3 = teamColor.Color
             info.ConquestPoint.BrickColor = teamColor
         else
             newThread(function()
+                newTween(info.PointName, FLASH_TWEEN_INFO, {TextColor3 = NEUTRAL_COLOR.Color})
                 newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = NEUTRAL_COLOR.Color}).Completed:Wait()
+
+                newTween(info.PointName, FLASH_TWEEN_INFO, {TextColor3 = teamColor.Color})
                 newTween(info.ConquestPoint, FLASH_TWEEN_INFO, {Color = teamColor.Color})
             end)
         end
     else
+        info.TeamCapturingValue.Value = "NEUTRAL"
+        info.PointName.TextColor3 = NEUTRAL_COLOR.Color
         info.ConquestPoint.BrickColor = NEUTRAL_COLOR
         info.FillUI:TweenSize(UDim2.fromScale(0, 1), table.unpack(FILL_UI_TWEEN_INFO))
     end
@@ -116,6 +123,8 @@ local function __main__()
         local info = {
             ConquestPoint = conquestPoint,
             FillUI = conquestPoint.BillboardGui.Background.Fill,
+            PointName = conquestPoint.BillboardGui.PointName,
+            TeamCapturingValue = conquestPoint.TeamCapturing,
             Region = Region3.new(conquestPoint.Position - conquestPoint.Size / 2, conquestPoint.Position + conquestPoint.Size / 2),
 
             PartsInRegion = {},
@@ -126,12 +135,19 @@ local function __main__()
             IGNORE_LIST = {},
         }
 
-        while true do
-            info.PartsInRegion = Workspace:FindPartsInRegion3WithIgnoreList(info.Region, info.IGNORE_LIST, MAX_PARTS_IN_REGION)
-            addPlayers(info)
-            initiateCapturing(info)
-            visualize(info)
-            wait(UPDATE_DELAY)
+        if info.ConquestPoint.SpawningTeam.Value == "" then
+            while true do
+                info.PartsInRegion = Workspace:FindPartsInRegion3WithIgnoreList(info.Region, info.IGNORE_LIST, MAX_PARTS_IN_REGION)
+                addPlayers(info)
+                initiateCapturing(info)
+                visualize(info)
+                wait(UPDATE_DELAY)
+            end
+        else
+            local teamColor = Teams[info.ConquestPoint.SpawningTeam.Value].TeamColor
+            info.FillUI.Parent.Visible = false
+            info.PointName.TextColor3 = teamColor.Color
+            info.ConquestPoint.BrickColor = teamColor
         end
     end)
 end
